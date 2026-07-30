@@ -1,2 +1,2 @@
 target/
-src/main/resources/application-dev.yml
+src/main/resources/application-dev.properties

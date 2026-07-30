@@ -4,7 +4,7 @@ API de finanças pessoais em Java 25 e Spring Boot. O pacote-base adotado é `co
 
 ## Desenvolvimento local
 
-Use o perfil `dev` somente com uma configuração local não versionada. Copie `src/main/resources/application-dev.example.yml` para `application-dev.yml`, informe as variáveis de banco e JWT e inicie com o perfil `dev`.
+Use o perfil `dev` somente com uma configuração local não versionada. Copie `src/main/resources/application-dev.example.properties` para `application-dev.properties`, informe as variáveis de banco e JWT e inicie com o perfil `dev`.
 
 ## Comandos
 
