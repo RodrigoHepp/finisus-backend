@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: finisus-backend
+  jackson:
+    default-property-inclusion: non_null
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: America/Sao_Paulo
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  messages:
+    basename: messages
+    encoding: UTF-8
+
+server:
+  servlet:
+    context-path: /
+  error:
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+app:
+  jwt:
+    issuer: finisus-backend
+    access-token-expiration-minutes: 15
+    refresh-token-expiration-days: 7
+  cors:
+    allowed-origins: "*"
+  recorrencias:
+    timezone: America/Sao_Paulo
+
+springdoc:
+  api-docs:
+    path: /api/v1/docs
+  swagger-ui:
+    path: /api/v1/swagger-ui.html
+
+logging:
+  pattern:
+    console: '{"timestamp":"%d{ISO8601}","level":"%p","logger":"%c","correlationId":"%X{correlationId}","message":"%m"}%n'
