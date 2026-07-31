@@ -1,2 +1,6 @@
 target/
 src/main/resources/application-dev.properties
+.classpath
+.factorypath
+.project
+.settings/
