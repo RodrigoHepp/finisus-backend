@@ -15,16 +15,16 @@ import lombok.Setter;
 @Setter
 public class RecorrenciaGeracaoJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "recorrencia_id")
-    private Long recorrenciaId;
+	@Column(name = "recorrencia_id")
+	private Long recorrenciaId;
 
-    @Column(name = "ano_mes")
-    private String anoMes;
+	@Column(name = "ano_mes")
+	private String anoMes;
 
-    @Column(name = "transacao_id")
-    private Long transacaoId;
+	@Column(name = "transacao_id")
+	private Long transacaoId;
 }

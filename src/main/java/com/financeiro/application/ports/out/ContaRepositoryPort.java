@@ -9,14 +9,15 @@ import java.util.Optional;
 
 public interface ContaRepositoryPort {
 
-    Conta salvar(Conta conta);
+	Conta salvar(Conta conta);
 
-    Optional<Conta> buscarPorId(Long id);
+	Optional<Conta> buscarPorId(Long id);
 
-    Optional<Conta> buscarPorIdEUsuario(Long id, Long usuarioId);
+	Optional<Conta> buscarPorIdEUsuario(Long id, Long usuarioId);
 
-    List<Conta> listarPorUsuario(Long usuarioId);
-    Pagina<Conta> listarPorUsuario(Long usuarioId, Paginacao paginacao);
+	List<Conta> listarPorUsuario(Long usuarioId);
 
-    boolean existePorIdEUsuario(Long id, Long usuarioId);
+	Pagina<Conta> listarPorUsuario(Long usuarioId, Paginacao paginacao);
+
+	boolean existePorIdEUsuario(Long id, Long usuarioId);
 }

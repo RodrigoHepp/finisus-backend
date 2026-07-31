@@ -18,20 +18,20 @@ import lombok.Setter;
 @Setter
 public class InvestimentoJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
+	@Column(name = "usuario_id")
+	private Long usuarioId;
 
-    private String nome;
+	private String nome;
 
-    @Enumerated(EnumType.STRING)
-    private TipoInvestimento tipo;
+	@Enumerated(EnumType.STRING)
+	private TipoInvestimento tipo;
 
-    @Column(name = "conta_origem_id")
-    private Long contaOrigemId;
+	@Column(name = "conta_origem_id")
+	private Long contaOrigemId;
 
-    private boolean ativo;
+	private boolean ativo;
 }

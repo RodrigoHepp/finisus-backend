@@ -14,6 +14,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "movimento_investimento")
@@ -21,20 +22,26 @@ import java.time.LocalDate;
 @Setter
 public class MovimentoInvestimentoJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "investimento_id")
-    private Long investimentoId;
+	@Column(name = "investimento_id")
+	private Long investimentoId;
 
-    @Enumerated(EnumType.STRING)
-    private TipoMovimentoInvestimento tipo;
+	@Enumerated(EnumType.STRING)
+	private TipoMovimentoInvestimento tipo;
 
-    private BigDecimal valor;
+	private BigDecimal valor;
 
-    private LocalDate data;
+	private LocalDate data;
 
-    @Column(name = "transacao_id")
-    private Long transacaoId;
+	@Column(name = "transacao_id")
+	private Long transacaoId;
+
+	@Column(name = "movimento_origem_id")
+	private Long movimentoOrigemId;
+
+	@Column(name = "estornado_em")
+	private LocalDateTime estornadoEm;
 }

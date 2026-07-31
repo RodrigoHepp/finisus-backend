@@ -9,12 +9,13 @@ import java.util.Optional;
 
 public interface CompraParceladaRepositoryPort {
 
-    CompraParcelada salvar(CompraParcelada compraParcelada);
+	CompraParcelada salvar(CompraParcelada compraParcelada);
 
-    Optional<CompraParcelada> buscarPorId(Long id);
+	Optional<CompraParcelada> buscarPorId(Long id);
 
-    Optional<CompraParcelada> buscarPorIdEUsuario(Long id, Long usuarioId);
+	Optional<CompraParcelada> buscarPorIdEUsuario(Long id, Long usuarioId);
 
-    List<CompraParcelada> listarPorUsuario(Long usuarioId);
-    Pagina<CompraParcelada> listarPorUsuario(Long usuarioId, Paginacao paginacao);
+	List<CompraParcelada> listarPorUsuario(Long usuarioId);
+
+	Pagina<CompraParcelada> listarPorUsuario(Long usuarioId, Paginacao paginacao);
 }

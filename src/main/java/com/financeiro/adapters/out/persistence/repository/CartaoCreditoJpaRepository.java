@@ -10,8 +10,9 @@ import java.util.Optional;
 
 public interface CartaoCreditoJpaRepository extends JpaRepository<CartaoCreditoJpaEntity, Long> {
 
-    Optional<CartaoCreditoJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
+	Optional<CartaoCreditoJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
 
-    List<CartaoCreditoJpaEntity> findByUsuarioId(Long usuarioId);
-    Page<CartaoCreditoJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
+	List<CartaoCreditoJpaEntity> findByUsuarioId(Long usuarioId);
+
+	Page<CartaoCreditoJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
 }

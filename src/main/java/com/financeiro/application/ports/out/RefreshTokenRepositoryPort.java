@@ -4,11 +4,11 @@ import java.util.Optional;
 
 public interface RefreshTokenRepositoryPort {
 
-    void salvar(String token, Long usuarioId, java.time.Instant expiraEm);
+	void salvar(String token, Long usuarioId, java.time.Instant expiraEm);
 
-    Optional<Long> buscarUsuarioIdPorToken(String token);
+	Optional<Long> buscarUsuarioIdPorToken(String token);
 
-    void invalidar(String token);
+	void invalidar(String token);
 
-    void invalidarTodosDoUsuario(Long usuarioId);
+	void invalidarTodosDoUsuario(Long usuarioId);
 }

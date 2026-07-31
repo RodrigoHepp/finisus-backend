@@ -1,8 +1,5 @@
 package com.financeiro.domain.model;
 
 public enum StatusRateio {
-    PENDENTE,
-    ACEITO,
-    RECUSADO,
-    PAGO
+	PENDENTE, ACEITO, RECUSADO, PAGO, CANCELADO
 }

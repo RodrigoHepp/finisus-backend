@@ -25,25 +25,25 @@ import java.time.LocalDate;
 @Setter
 public class ParcelaFinanciamentoJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Version
-    @Column(nullable = false)
-    private Long version;
+	@Version
+	@Column(nullable = false)
+	private Long version;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "financiamento_id", nullable = false)
-    private FinanciamentoJpaEntity financiamento;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "financiamento_id", nullable = false)
+	private FinanciamentoJpaEntity financiamento;
 
-    private Integer numero;
+	private Integer numero;
 
-    private BigDecimal valor;
+	private BigDecimal valor;
 
-    @Column(name = "data_vencimento")
-    private LocalDate dataVencimento;
+	@Column(name = "data_vencimento")
+	private LocalDate dataVencimento;
 
-    @Enumerated(EnumType.STRING)
-    private StatusParcelaFinanciamento status;
+	@Enumerated(EnumType.STRING)
+	private StatusParcelaFinanciamento status;
 }

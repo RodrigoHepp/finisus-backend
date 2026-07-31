@@ -8,7 +8,9 @@ import com.financeiro.domain.vo.AnoMes;
 import java.util.List;
 
 public interface PrevisaoMensalRepositoryPort {
-    void substituir(Long usuarioId, AnoMes anoMes, List<PrevisaoMensal> previsoes);
-    List<PrevisaoMensal> listar(Long usuarioId, AnoMes anoMes);
-    Pagina<PrevisaoMensal> listar(Long usuarioId, AnoMes anoMes, Paginacao paginacao);
+	void substituir(Long usuarioId, AnoMes anoMes, List<PrevisaoMensal> previsoes);
+
+	List<PrevisaoMensal> listar(Long usuarioId, AnoMes anoMes);
+
+	Pagina<PrevisaoMensal> listar(Long usuarioId, AnoMes anoMes, Paginacao paginacao);
 }

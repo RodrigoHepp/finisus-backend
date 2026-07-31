@@ -10,8 +10,9 @@ import java.util.Optional;
 
 public interface MeioPagamentoJpaRepository extends JpaRepository<MeioPagamentoJpaEntity, Long> {
 
-    List<MeioPagamentoJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId);
-    Page<MeioPagamentoJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId, Pageable pageable);
+	List<MeioPagamentoJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId);
 
-    Optional<MeioPagamentoJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
+	Page<MeioPagamentoJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId, Pageable pageable);
+
+	Optional<MeioPagamentoJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
 }

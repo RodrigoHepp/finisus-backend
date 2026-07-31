@@ -10,8 +10,9 @@ import java.util.Optional;
 
 public interface InvestimentoJpaRepository extends JpaRepository<InvestimentoJpaEntity, Long> {
 
-    Optional<InvestimentoJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
+	Optional<InvestimentoJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
 
-    List<InvestimentoJpaEntity> findByUsuarioId(Long usuarioId);
-    Page<InvestimentoJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
+	List<InvestimentoJpaEntity> findByUsuarioId(Long usuarioId);
+
+	Page<InvestimentoJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
 }

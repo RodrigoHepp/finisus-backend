@@ -4,9 +4,11 @@ import java.time.Instant;
 
 public interface RenovarTokenUseCase {
 
-    Result executar(Command command);
+	Result executar(Command command);
 
-    record Command(String refreshToken) {}
+	record Command(String refreshToken) {
+	}
 
-    record Result(String accessToken, String refreshToken, Instant accessTokenExpiraEm) {}
+	record Result(String accessToken, String refreshToken, Instant accessTokenExpiraEm) {
+	}
 }

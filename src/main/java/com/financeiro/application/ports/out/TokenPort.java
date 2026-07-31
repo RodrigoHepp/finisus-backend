@@ -5,15 +5,15 @@ import java.util.Optional;
 
 public interface TokenPort {
 
-    String gerarAccessToken(Long usuarioId, String email, long sessaoVersao);
+	String gerarAccessToken(Long usuarioId, String email, long sessaoVersao);
 
-    String gerarRefreshToken(Long usuarioId);
+	String gerarRefreshToken(Long usuarioId);
 
-    Optional<Long> validarAccessToken(String token);
+	Optional<Long> validarAccessToken(String token);
 
-    Optional<Long> validarRefreshToken(String token);
+	Optional<Long> validarRefreshToken(String token);
 
-    Instant expiracaoAccessToken();
+	Instant expiracaoAccessToken();
 
-    Instant expiracaoRefreshToken();
+	Instant expiracaoRefreshToken();
 }

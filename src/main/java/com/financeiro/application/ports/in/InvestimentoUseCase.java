@@ -1,3 +1,25 @@
 package com.financeiro.application.ports.in;
-import com.financeiro.application.pagination.Pagina; import com.financeiro.application.pagination.Paginacao; import com.financeiro.domain.model.*; import java.math.BigDecimal; import java.time.LocalDate; import java.util.List;
-public interface InvestimentoUseCase { Investimento criar(Long usuarioId,CriarCommand command);Investimento buscar(Long usuarioId,Long investimentoId);Investimento atualizar(Long usuarioId,Long investimentoId,CriarCommand command);Investimento inativar(Long usuarioId,Long investimentoId);List<Investimento> listar(Long usuarioId);Pagina<Investimento> listar(Long usuarioId,Paginacao paginacao);MovimentoInvestimento movimentar(Long usuarioId,MovimentoCommand command);List<MovimentoInvestimento> listarMovimentos(Long usuarioId,Long investimentoId);Pagina<MovimentoInvestimento> listarMovimentos(Long usuarioId,Long investimentoId,Paginacao paginacao);record CriarCommand(String nome,TipoInvestimento tipo,Long contaOrigemId){}record MovimentoCommand(Long investimentoId,TipoMovimentoInvestimento tipo,BigDecimal valor,LocalDate data){} }
+
+import com.financeiro.application.pagination.Pagina;
+import com.financeiro.application.pagination.Paginacao;
+import com.financeiro.domain.model.Investimento;
+import com.financeiro.domain.model.TipoInvestimento;
+
+import java.util.List;
+
+public interface InvestimentoUseCase {
+	Investimento criar(Long usuarioId, CriarCommand command);
+
+	Investimento buscar(Long usuarioId, Long investimentoId);
+
+	Investimento atualizar(Long usuarioId, Long investimentoId, CriarCommand command);
+
+	Investimento inativar(Long usuarioId, Long investimentoId);
+
+	List<Investimento> listar(Long usuarioId);
+
+	Pagina<Investimento> listar(Long usuarioId, Paginacao paginacao);
+
+	record CriarCommand(String nome, TipoInvestimento tipo, Long contaOrigemId) {
+	}
+}

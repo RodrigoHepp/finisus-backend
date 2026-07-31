@@ -10,18 +10,19 @@ import java.util.Optional;
 
 public interface RecorrenciaRepositoryPort {
 
-    Recorrencia salvar(Recorrencia recorrencia);
+	Recorrencia salvar(Recorrencia recorrencia);
 
-    Optional<Recorrencia> buscarPorId(Long id);
+	Optional<Recorrencia> buscarPorId(Long id);
 
-    Optional<Recorrencia> buscarPorIdEUsuario(Long id, Long usuarioId);
+	Optional<Recorrencia> buscarPorIdEUsuario(Long id, Long usuarioId);
 
-    List<Recorrencia> listarPorUsuario(Long usuarioId);
-    Pagina<Recorrencia> listarPorUsuario(Long usuarioId, Paginacao paginacao);
+	List<Recorrencia> listarPorUsuario(Long usuarioId);
 
-    List<Recorrencia> listarAtivasPorUsuario(Long usuarioId);
+	Pagina<Recorrencia> listarPorUsuario(Long usuarioId, Paginacao paginacao);
 
-    void registrarGeracao(Long recorrenciaId, AnoMes anoMes, Long transacaoId);
+	List<Recorrencia> listarAtivasPorUsuario(Long usuarioId);
 
-    boolean existsGeracaoPorRecorrenciaEAnoMes(Long recorrenciaId, AnoMes anoMes);
+	void registrarGeracao(Long recorrenciaId, AnoMes anoMes, Long transacaoId);
+
+	boolean existsGeracaoPorRecorrenciaEAnoMes(Long recorrenciaId, AnoMes anoMes);
 }

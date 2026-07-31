@@ -15,16 +15,16 @@ import lombok.Setter;
 @Setter
 public class BancoJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String nome;
+	private String nome;
 
-    private String codigo;
+	private String codigo;
 
-    private boolean ativo;
+	private boolean ativo;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
+	@Column(name = "usuario_id")
+	private Long usuarioId;
 }

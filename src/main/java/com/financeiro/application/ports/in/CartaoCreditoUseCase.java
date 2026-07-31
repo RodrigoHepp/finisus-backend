@@ -1,7 +1,25 @@
 package com.financeiro.application.ports.in;
-import com.financeiro.application.pagination.Pagina; import com.financeiro.application.pagination.Paginacao; import com.financeiro.domain.model.*;
-import java.math.BigDecimal; import java.time.LocalDate; import java.util.List;
+
+import com.financeiro.application.pagination.Pagina;
+import com.financeiro.application.pagination.Paginacao;
+import com.financeiro.domain.model.CartaoCredito;
+
+import java.math.BigDecimal;
+import java.util.List;
+
 public interface CartaoCreditoUseCase {
- CartaoCredito criarCartao(Long usuarioId,CriarCartaoCommand command); List<CartaoCredito> listarCartoes(Long usuarioId); Pagina<CartaoCredito> listarCartoes(Long usuarioId,Paginacao paginacao); CartaoCredito buscarCartao(Long usuarioId,Long cartaoId); CartaoCredito atualizarCartao(Long usuarioId,Long cartaoId,CriarCartaoCommand command); CartaoCredito inativarCartao(Long usuarioId,Long cartaoId); Fatura criarFatura(Long usuarioId,CriarFaturaCommand command); List<Fatura> listarFaturas(Long usuarioId,Long cartaoId); Pagina<Fatura> listarFaturas(Long usuarioId,Long cartaoId,Paginacao paginacao); Fatura buscarFatura(Long usuarioId,Long faturaId); Transacao lancarGasto(Long usuarioId,LancarGastoCommand command); Fatura fechar(Long usuarioId,Long faturaId); Fatura pagar(Long usuarioId,Long faturaId, LocalDate dataPagamento);
- record CriarCartaoCommand(String nome,BigDecimal limite,int diaFechamento,int diaVencimento){} record CriarFaturaCommand(Long cartaoId,String anoMes,LocalDate dataFechamento,LocalDate dataVencimento,Long contaPagamentoId){} record LancarGastoCommand(Long faturaId,BigDecimal valor,LocalDate data,String descricao,Long contaId,Long categoriaId,List<FinanceiroCoreUseCase.ItemCommand> itens){}
+	CartaoCredito criarCartao(Long usuarioId, CriarCartaoCommand command);
+
+	List<CartaoCredito> listarCartoes(Long usuarioId);
+
+	Pagina<CartaoCredito> listarCartoes(Long usuarioId, Paginacao paginacao);
+
+	CartaoCredito buscarCartao(Long usuarioId, Long cartaoId);
+
+	CartaoCredito atualizarCartao(Long usuarioId, Long cartaoId, CriarCartaoCommand command);
+
+	CartaoCredito inativarCartao(Long usuarioId, Long cartaoId);
+
+	record CriarCartaoCommand(String nome, BigDecimal limite, int diaFechamento, int diaVencimento) {
+	}
 }

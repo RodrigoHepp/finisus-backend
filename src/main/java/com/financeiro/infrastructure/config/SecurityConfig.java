@@ -1,5 +1,6 @@
 package com.financeiro.infrastructure.config;
 
+import com.financeiro.infrastructure.security.JwtUsuarioAutenticadoAuthenticationConverter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,35 +23,37 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityProblemDetailHandlers problemHandlers) throws Exception {
-        return http
-                .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/auth/**", "/actuator/health", "/api/v1/docs/**", "/api/v1/swagger-ui.html", "/swagger-ui/**").permitAll()
-                        .anyRequest().authenticated())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
-                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(problemHandlers).accessDeniedHandler(problemHandlers))
-                .build();
-    }
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityProblemDetailHandlers problemHandlers,
+			JwtUsuarioAutenticadoAuthenticationConverter authenticationConverter) throws Exception {
+		return http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults())
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(authorize -> authorize
+						.requestMatchers("/api/v1/auth/**", "/actuator/health", "/api/v1/docs/**",
+								"/api/v1/swagger-ui.html", "/api/v1/swagger-ui/**", "/swagger-ui/**")
+						.permitAll().anyRequest().authenticated())
+				.oauth2ResourceServer(
+						oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter)))
+				.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(problemHandlers)
+						.accessDeniedHandler(problemHandlers))
+				.build();
+	}
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource(@Value("${app.cors.allowed-origins:*}") String allowedOrigins) {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of(allowedOrigins.split(",")));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Idempotency-Key"));
-        configuration.setExposedHeaders(List.of("Location"));
-        configuration.setAllowCredentials(false);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+	@Bean
+	CorsConfigurationSource corsConfigurationSource(@Value("${app.cors.allowed-origins:*}") String allowedOrigins) {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOriginPatterns(List.of(allowedOrigins.split(",")));
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Idempotency-Key"));
+		configuration.setExposedHeaders(List.of("Location"));
+		configuration.setAllowCredentials(false);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
+	}
 }

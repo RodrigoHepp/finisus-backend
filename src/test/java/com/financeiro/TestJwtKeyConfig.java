@@ -10,7 +10,18 @@ import java.security.interfaces.RSAPublicKey;
 
 @TestConfiguration
 public class TestJwtKeyConfig {
-    @Bean RSAKey rsaKey() throws Exception { return new RSAKeyGenerator(2048).keyID("test-jwt-key").generate(); }
-    @Bean RSAPublicKey rsaPublicKey(RSAKey key) throws Exception { return key.toRSAPublicKey(); }
-    @Bean RSAPrivateKey rsaPrivateKey(RSAKey key) throws Exception { return key.toRSAPrivateKey(); }
+	@Bean
+	RSAKey rsaKey() throws Exception {
+		return new RSAKeyGenerator(2048).keyID("test-jwt-key").generate();
+	}
+
+	@Bean
+	RSAPublicKey rsaPublicKey(RSAKey key) throws Exception {
+		return key.toRSAPublicKey();
+	}
+
+	@Bean
+	RSAPrivateKey rsaPrivateKey(RSAKey key) throws Exception {
+		return key.toRSAPrivateKey();
+	}
 }

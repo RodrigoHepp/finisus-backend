@@ -11,13 +11,13 @@ import java.util.Optional;
 
 public interface RefreshTokenJpaRepository extends JpaRepository<RefreshTokenJpaEntity, Long> {
 
-    Optional<RefreshTokenJpaEntity> findByTokenAndInvalidadoFalseAndExpiraEmAfter(String token, Instant agora);
+	Optional<RefreshTokenJpaEntity> findByTokenAndInvalidadoFalseAndExpiraEmAfter(String token, Instant agora);
 
-    @Modifying
-    @Query("UPDATE RefreshTokenJpaEntity r SET r.invalidado = true WHERE r.token = :token")
-    void invalidarPorToken(@Param("token") String token);
+	@Modifying
+	@Query("UPDATE RefreshTokenJpaEntity r SET r.invalidado = true WHERE r.token = :token")
+	void invalidarPorToken(@Param("token") String token);
 
-    @Modifying
-    @Query("UPDATE RefreshTokenJpaEntity r SET r.invalidado = true WHERE r.usuarioId = :usuarioId")
-    void invalidarTodosDoUsuario(@Param("usuarioId") Long usuarioId);
+	@Modifying
+	@Query("UPDATE RefreshTokenJpaEntity r SET r.invalidado = true WHERE r.usuarioId = :usuarioId")
+	void invalidarTodosDoUsuario(@Param("usuarioId") Long usuarioId);
 }

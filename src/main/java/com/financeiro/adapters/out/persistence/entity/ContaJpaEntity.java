@@ -22,28 +22,28 @@ import java.time.LocalDateTime;
 @Setter
 public class ContaJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
+	@Column(name = "usuario_id")
+	private Long usuarioId;
 
-    private String nome;
+	private String nome;
 
-    @Enumerated(EnumType.STRING)
-    private TipoConta tipo;
+	@Enumerated(EnumType.STRING)
+	private TipoConta tipo;
 
-    @Column(name = "banco_id")
-    private Long bancoId;
+	@Column(name = "banco_id")
+	private Long bancoId;
 
-    private BigDecimal saldo;
+	private BigDecimal saldo;
 
-    private boolean ativo;
+	private boolean ativo;
 
-    @Version
-    private Long version;
+	@Version
+	private Long version;
 
-    @Column(name = "criado_em", insertable = false, updatable = false)
-    private LocalDateTime criadoEm;
+	@Column(name = "criado_em", insertable = false, updatable = false)
+	private LocalDateTime criadoEm;
 }

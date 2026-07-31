@@ -9,19 +9,19 @@ import java.time.LocalDateTime;
 
 @Component
 public class ClockDataAtualAdapter implements ObterDataAtualPort {
-    private final Clock clock;
+	private final Clock clock;
 
-    public ClockDataAtualAdapter(Clock clock) {
-        this.clock = clock;
-    }
+	public ClockDataAtualAdapter(Clock clock) {
+		this.clock = clock;
+	}
 
-    @Override
-    public LocalDate obter() {
-        return LocalDate.now(clock);
-    }
+	@Override
+	public LocalDate obter() {
+		return LocalDate.now(clock);
+	}
 
-    @Override
-    public LocalDateTime obterDataHora() {
-        return LocalDateTime.now(clock);
-    }
+	@Override
+	public LocalDateTime obterDataHora() {
+		return LocalDateTime.now(clock);
+	}
 }

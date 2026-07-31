@@ -10,8 +10,9 @@ import java.util.Optional;
 
 public interface CompraParceladaJpaRepository extends JpaRepository<CompraParceladaJpaEntity, Long> {
 
-    Optional<CompraParceladaJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
+	Optional<CompraParceladaJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
 
-    List<CompraParceladaJpaEntity> findByUsuarioId(Long usuarioId);
-    Page<CompraParceladaJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
+	List<CompraParceladaJpaEntity> findByUsuarioId(Long usuarioId);
+
+	Page<CompraParceladaJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
 }

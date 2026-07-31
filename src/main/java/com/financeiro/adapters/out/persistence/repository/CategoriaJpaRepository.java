@@ -10,8 +10,9 @@ import java.util.Optional;
 
 public interface CategoriaJpaRepository extends JpaRepository<CategoriaJpaEntity, Long> {
 
-    List<CategoriaJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId);
-    Page<CategoriaJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId, Pageable pageable);
+	List<CategoriaJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId);
 
-    Optional<CategoriaJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
+	Page<CategoriaJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId, Pageable pageable);
+
+	Optional<CategoriaJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
 }

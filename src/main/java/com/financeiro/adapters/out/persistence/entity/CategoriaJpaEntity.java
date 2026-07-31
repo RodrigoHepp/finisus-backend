@@ -15,17 +15,17 @@ import lombok.Setter;
 @Setter
 public class CategoriaJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
+	@Column(name = "usuario_id")
+	private Long usuarioId;
 
-    private String nome;
+	private String nome;
 
-    @Column(name = "categoria_pai_id")
-    private Long categoriaPaiId;
+	@Column(name = "categoria_pai_id")
+	private Long categoriaPaiId;
 
-    private boolean ativo;
+	private boolean ativo;
 }

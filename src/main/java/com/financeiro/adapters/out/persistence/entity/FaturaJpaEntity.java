@@ -21,28 +21,31 @@ import java.time.LocalDate;
 @Setter
 public class FaturaJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "cartao_id")
-    private Long cartaoId;
+	@Column(name = "cartao_id")
+	private Long cartaoId;
 
-    @Column(name = "ano_mes")
-    private String anoMes;
+	@Column(name = "ano_mes")
+	private String anoMes;
 
-    @Column(name = "data_fechamento")
-    private LocalDate dataFechamento;
+	@Column(name = "data_fechamento")
+	private LocalDate dataFechamento;
 
-    @Column(name = "data_vencimento")
-    private LocalDate dataVencimento;
+	@Column(name = "data_vencimento")
+	private LocalDate dataVencimento;
 
-    @Enumerated(EnumType.STRING)
-    private StatusFatura status;
+	@Enumerated(EnumType.STRING)
+	private StatusFatura status;
 
-    @Column(name = "conta_pagamento_id")
-    private Long contaPagamentoId;
+	@Column(name = "conta_pagamento_id")
+	private Long contaPagamentoId;
 
-    @Version
-    private Long version;
+	@Column(name = "cancelada_em")
+	private LocalDate canceladaEm;
+
+	@Version
+	private Long version;
 }

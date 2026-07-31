@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface TransacaoHistoricoJpaRepository extends JpaRepository<TransacaoHistoricoJpaEntity, Long> {
 
-    List<TransacaoHistoricoJpaEntity> findByTransacaoIdOrderByAlteradoEmDesc(Long transacaoId);
-    Page<TransacaoHistoricoJpaEntity> findByTransacaoId(Long transacaoId, Pageable pageable);
+	List<TransacaoHistoricoJpaEntity> findByTransacaoIdOrderByAlteradoEmDesc(Long transacaoId);
+
+	Page<TransacaoHistoricoJpaEntity> findByTransacaoId(Long transacaoId, Pageable pageable);
 }

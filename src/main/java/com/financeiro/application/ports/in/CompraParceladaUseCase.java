@@ -8,10 +8,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface CompraParceladaUseCase {
-    CompraParcelada criar(Long usuarioId, CriarCommand command);
-    List<CompraParcelada> listar(Long usuarioId);
-    Pagina<CompraParcelada> listar(Long usuarioId, Paginacao paginacao);
-    CompraParcelada buscar(Long usuarioId, Long compraId);
-    CompraParcelada cancelar(Long usuarioId, Long compraId);
-    record CriarCommand(String descricao, BigDecimal valorTotal, int numeroParcelas, LocalDate dataCompra, Long categoriaId, Long contaId) {}
+	CompraParcelada criar(Long usuarioId, CriarCommand command);
+
+	List<CompraParcelada> listar(Long usuarioId);
+
+	Pagina<CompraParcelada> listar(Long usuarioId, Paginacao paginacao);
+
+	CompraParcelada buscar(Long usuarioId, Long compraId);
+
+	CompraParcelada cancelar(Long usuarioId, Long compraId);
+
+	record CriarCommand(String descricao, BigDecimal valorTotal, int numeroParcelas, LocalDate dataCompra,
+			Long categoriaId, Long contaId) {
+	}
 }

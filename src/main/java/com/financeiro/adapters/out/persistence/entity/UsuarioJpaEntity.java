@@ -17,22 +17,22 @@ import java.time.LocalDateTime;
 @Setter
 public class UsuarioJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String nome;
+	private String nome;
 
-    private String email;
+	private String email;
 
-    @Column(name = "senha_hash")
-    private String senhaHash;
+	@Column(name = "senha_hash")
+	private String senhaHash;
 
-    private boolean ativo;
+	private boolean ativo;
 
-    @Column(name = "criado_em")
-    private LocalDateTime criadoEm;
+	@Column(name = "criado_em")
+	private LocalDateTime criadoEm;
 
-    @Column(name = "sessao_versao", nullable = false)
-    private long sessaoVersao;
+	@Column(name = "sessao_versao", nullable = false)
+	private long sessaoVersao;
 }

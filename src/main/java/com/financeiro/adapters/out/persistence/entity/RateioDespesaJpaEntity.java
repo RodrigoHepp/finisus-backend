@@ -24,32 +24,32 @@ import java.math.BigDecimal;
 @Setter
 public class RateioDespesaJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "despesa_compartilhada_id", nullable = false)
-    private DespesaCompartilhadaJpaEntity despesaCompartilhada;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "despesa_compartilhada_id", nullable = false)
+	private DespesaCompartilhadaJpaEntity despesaCompartilhada;
 
-    @Column(name = "tipo_participante")
-    @Enumerated(EnumType.STRING)
-    private TipoParticipante tipoParticipante;
+	@Column(name = "tipo_participante")
+	@Enumerated(EnumType.STRING)
+	private TipoParticipante tipoParticipante;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
+	@Column(name = "usuario_id")
+	private Long usuarioId;
 
-    @Column(name = "nome_externo")
-    private String nomeExterno;
+	@Column(name = "nome_externo")
+	private String nomeExterno;
 
-    @Column(name = "email_externo")
-    private String emailExterno;
+	@Column(name = "email_externo")
+	private String emailExterno;
 
-    @Column(name = "valor_fixo")
-    private BigDecimal valorFixo;
+	@Column(name = "valor_fixo")
+	private BigDecimal valorFixo;
 
-    private BigDecimal percentual;
+	private BigDecimal percentual;
 
-    @Enumerated(EnumType.STRING)
-    private StatusRateio status;
+	@Enumerated(EnumType.STRING)
+	private StatusRateio status;
 }

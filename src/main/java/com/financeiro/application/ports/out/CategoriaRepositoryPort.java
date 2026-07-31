@@ -9,12 +9,13 @@ import java.util.Optional;
 
 public interface CategoriaRepositoryPort {
 
-    Categoria salvar(Categoria categoria);
+	Categoria salvar(Categoria categoria);
 
-    Optional<Categoria> buscarPorId(Long id);
+	Optional<Categoria> buscarPorId(Long id);
 
-    Optional<Categoria> buscarPorIdEUsuario(Long id, Long usuarioId);
+	Optional<Categoria> buscarPorIdEUsuario(Long id, Long usuarioId);
 
-    List<Categoria> listarPorUsuario(Long usuarioId);
-    Pagina<Categoria> listarPorUsuario(Long usuarioId, Paginacao paginacao);
+	List<Categoria> listarPorUsuario(Long usuarioId);
+
+	Pagina<Categoria> listarPorUsuario(Long usuarioId, Paginacao paginacao);
 }

@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface UsuarioJpaRepository extends JpaRepository<UsuarioJpaEntity, Long> {
 
-    Optional<UsuarioJpaEntity> findByEmail(String email);
+	Optional<UsuarioJpaEntity> findByEmail(String email);
 
-    boolean existsByEmail(String email);
+	boolean existsByEmail(String email);
 
-    List<UsuarioJpaEntity> findByAtivoTrue();
+	List<UsuarioJpaEntity> findByAtivoTrue();
 }

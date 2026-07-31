@@ -7,191 +7,373 @@ import com.financeiro.infrastructure.observability.OperacaoFinanceiraMetrics;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Proxy;
-import java.util.Map;
-import java.util.function.Supplier;
 
 @Configuration
 public class UseCaseConfiguration {
+	@Bean
+	AutenticacaoService autenticacaoService(UsuarioRepositoryPort u, PasswordEncoderPort p, TokenPort t,
+			RefreshTokenRepositoryPort r, ObterDataAtualPort d) {
+		return new AutenticacaoService(u, p, t, r, d);
+	}
 
-    @Bean
-    AutenticacaoService autenticacaoService(UsuarioRepositoryPort usuarios, PasswordEncoderPort passwordEncoder,
-                                            TokenPort tokens, RefreshTokenRepositoryPort refreshTokens,
-                                            ObterDataAtualPort dataAtual) {
-        return new AutenticacaoService(usuarios, passwordEncoder, tokens, refreshTokens, dataAtual);
-    }
+	@Bean
+	@Primary
+	CadastrarUsuarioUseCase cadastrarUsuarioUseCase(AutenticacaoService s) {
+		return command -> s.executar(command);
+	}
 
-    @Bean @Primary
-    CadastrarUsuarioUseCase cadastrarUsuarioUseCase(AutenticacaoService service, PlatformTransactionManager manager) {
-        return transacional(CadastrarUsuarioUseCase.class, service, manager, null, Map.of());
-    }
+	@Bean
+	@Primary
+	AutenticarUsuarioUseCase autenticarUsuarioUseCase(AutenticacaoService s) {
+		return command -> s.executar(command);
+	}
 
-    @Bean @Primary
-    AutenticarUsuarioUseCase autenticarUsuarioUseCase(AutenticacaoService service, PlatformTransactionManager manager) {
-        return transacional(AutenticarUsuarioUseCase.class, service, manager, null, Map.of());
-    }
+	@Bean
+	@Primary
+	RenovarTokenUseCase renovarTokenUseCase(AutenticacaoService s) {
+		return command -> s.executar(command);
+	}
 
-    @Bean @Primary
-    RenovarTokenUseCase renovarTokenUseCase(AutenticacaoService service, PlatformTransactionManager manager) {
-        return transacional(RenovarTokenUseCase.class, service, manager, null, Map.of());
-    }
+	@Bean
+	CartaoCreditoService cartaoCreditoService(CartaoCreditoRepositoryPort r) {
+		return new CartaoCreditoService(r);
+	}
 
-    @Bean
-    CartaoCreditoService cartaoCreditoService(CartaoCreditoRepositoryPort cartoes, FaturaRepositoryPort faturas,
-                                              ContaRepositoryPort contas, CategoriaRepositoryPort categorias,
-                                              TransacaoRepositoryPort transacoes, ObterDataAtualPort dataAtual) {
-        return new CartaoCreditoService(cartoes, faturas, contas, categorias, transacoes, dataAtual);
-    }
+	@Bean
+	@Primary
+	CartaoCreditoUseCase cartaoCreditoUseCase(CartaoCreditoService s) {
+		return s;
+	}
 
-    @Bean @Primary
-    CartaoCreditoUseCase cartaoCreditoUseCase(CartaoCreditoService service, PlatformTransactionManager manager,
-                                              OperacaoFinanceiraMetrics metrics) {
-        return transacional(CartaoCreditoUseCase.class, service, manager, metrics,
-                Map.of("lancarGasto", "gasto_cartao", "pagar", "pagamento_fatura"));
-    }
+	@Bean
+	FaturaService faturaService(FaturaRepositoryPort f, CartaoCreditoUseCase c, ContaRepositoryPort co,
+			CategoriaRepositoryPort ca, ItemRepositoryPort i, TransacaoRepositoryPort t, ObterDataAtualPort d) {
+		return new FaturaService(f, c, co, ca, i, t, d);
+	}
 
-    @Bean
-    CompartilhamentoService compartilhamentoService(CompartilhamentoRepositoryPort compartilhamentos,
-                                                    TransacaoRepositoryPort transacoes, UsuarioRepositoryPort usuarios) {
-        return new CompartilhamentoService(compartilhamentos, transacoes, usuarios);
-    }
+	@Bean
+	@Primary
+	FaturaUseCase faturaUseCase(FaturaService s, OperacaoFinanceiraMetrics m) {
+		return new FaturaUseCase() {
+			public com.financeiro.domain.model.Fatura criar(Long u, CriarCommand c) {
+				return s.criar(u, c);
+			}
 
-    @Bean @Primary
-    CompartilhamentoUseCase compartilhamentoUseCase(CompartilhamentoService service, PlatformTransactionManager manager) {
-        return transacional(CompartilhamentoUseCase.class, service, manager, null, Map.of());
-    }
+			public com.financeiro.domain.model.Fatura buscar(Long u, Long id) {
+				return s.buscar(u, id);
+			}
 
-    @Bean
-    CompraParceladaService compraParceladaService(CompraParceladaRepositoryPort compras, ContaRepositoryPort contas,
-                                                  CategoriaRepositoryPort categorias, TransacaoRepositoryPort transacoes,
-                                                  ObterDataAtualPort dataAtual) {
-        return new CompraParceladaService(compras, contas, categorias, transacoes, dataAtual);
-    }
+			public Detalhe buscarDetalhe(Long u, Long id) {
+				return s.buscarDetalhe(u, id);
+			}
 
-    @Bean @Primary
-    CompraParceladaUseCase compraParceladaUseCase(CompraParceladaService service, PlatformTransactionManager manager) {
-        return transacional(CompraParceladaUseCase.class, service, manager, null, Map.of());
-    }
+			public java.util.List<com.financeiro.domain.model.Fatura> listar(Long u, Long id) {
+				return s.listar(u, id);
+			}
 
-    @Bean
-    FinanceiroCoreService financeiroCoreService(BancoRepositoryPort bancos, ContaRepositoryPort contas,
-                                                CategoriaRepositoryPort categorias, MeioPagamentoRepositoryPort meios,
-                                                TransacaoRepositoryPort transacoes, ObterDataAtualPort dataAtual) {
-        return new FinanceiroCoreService(bancos, contas, categorias, meios, transacoes, dataAtual);
-    }
+			public com.financeiro.application.pagination.Pagina<com.financeiro.domain.model.Fatura> listar(Long u,
+					Long id, com.financeiro.application.pagination.Paginacao p) {
+				return s.listar(u, id, p);
+			}
 
-    @Bean @Primary
-    FinanceiroCoreUseCase financeiroCoreUseCase(FinanceiroCoreService service, PlatformTransactionManager manager,
-                                                OperacaoFinanceiraMetrics metrics) {
-        return transacional(FinanceiroCoreUseCase.class, service, manager, metrics, Map.of("registrarTransacao", "transacao"));
-    }
+			public com.financeiro.domain.model.Transacao lancarGasto(Long u, LancarGastoCommand c) {
+				return m.medir("gasto_cartao", () -> s.lancarGasto(u, c));
+			}
 
-    @Bean
-    InvestimentoService investimentoService(InvestimentoRepositoryPort investimentos, ContaRepositoryPort contas,
-                                            FinanceiroCoreUseCase transacoes) {
-        return new InvestimentoService(investimentos, contas, transacoes);
-    }
+			public com.financeiro.domain.model.Fatura fechar(Long u, Long id) {
+				return s.fechar(u, id);
+			}
 
-    @Bean @Primary
-    InvestimentoUseCase investimentoUseCase(InvestimentoService service, PlatformTransactionManager manager) {
-        return transacional(InvestimentoUseCase.class, service, manager, null, Map.of());
-    }
+			public com.financeiro.domain.model.Fatura pagar(Long u, Long id, java.time.LocalDate d) {
+				return m.medir("pagamento_fatura", () -> s.pagar(u, id, d));
+			}
 
-    @Bean
-    PerfilUsuarioService perfilUsuarioService(UsuarioRepositoryPort usuarios, RefreshTokenRepositoryPort refreshTokens) {
-        return new PerfilUsuarioService(usuarios, refreshTokens);
-    }
+			public com.financeiro.domain.model.Fatura atualizar(Long u, Long id, AtualizarCommand c) {
+				return s.atualizar(u, id, c);
+			}
 
-    @Bean @Primary
-    GerenciarPerfilUseCase gerenciarPerfilUseCase(PerfilUsuarioService service, PlatformTransactionManager manager) {
-        return transacional(GerenciarPerfilUseCase.class, service, manager, null, Map.of());
-    }
+			public com.financeiro.domain.model.Fatura cancelar(Long u, Long id) {
+				return s.cancelar(u, id);
+			}
+		};
+	}
 
-    @Bean
-    RecorrenciaService recorrenciaService(RecorrenciaRepositoryPort recorrencias, ContaRepositoryPort contas,
-                                          CategoriaRepositoryPort categorias, MeioPagamentoRepositoryPort meios,
-                                          TransacaoRepositoryPort transacoes, ObterDataAtualPort dataAtual) {
-        return new RecorrenciaService(recorrencias, contas, categorias, meios, transacoes, dataAtual);
-    }
+	@Bean
+	ConfiguracaoCompartilhamentoService configuracaoCompartilhamentoService(
+			ConfiguracaoCompartilhamentoRepositoryPort r) {
+		return new ConfiguracaoCompartilhamentoService(r);
+	}
 
-    @Bean @Primary
-    RecorrenciaUseCase recorrenciaUseCase(RecorrenciaService service, PlatformTransactionManager manager) {
-        return transacional(RecorrenciaUseCase.class, service, manager, null, Map.of());
-    }
+	@Bean
+	@Primary
+	ConfiguracaoCompartilhamentoUseCase configuracaoCompartilhamentoUseCase(ConfiguracaoCompartilhamentoService s) {
+		return s;
+	}
 
-    @Bean
-    FinanciamentoService financiamentoService(FinanciamentoRepositoryPort financiamentos, ContaRepositoryPort contas,
-                                              TransacaoRepositoryPort transacoes, ObterDataAtualPort dataAtual) {
-        return new FinanciamentoService(financiamentos, contas, transacoes, dataAtual);
-    }
+	@Bean
+	DespesaCompartilhadaService despesaCompartilhadaService(DespesaCompartilhadaRepositoryPort d,
+			RateioDespesaRepositoryPort r, ConfiguracaoCompartilhamentoRepositoryPort c, TransacaoRepositoryPort t,
+			UsuarioRepositoryPort u, ObterDataAtualPort dataAtual) {
+		return new DespesaCompartilhadaService(d, r, c, t, u, dataAtual);
+	}
 
-    @Bean @Primary
-    FinanciamentoUseCase financiamentoUseCase(FinanciamentoService service, PlatformTransactionManager manager,
-                                              OperacaoFinanceiraMetrics metrics) {
-        return transacional(FinanciamentoUseCase.class, service, manager, metrics,
-                Map.of("pagarParcela", "pagamento_parcela"));
-    }
+	@Bean
+	@Primary
+	DespesaCompartilhadaUseCase despesaCompartilhadaUseCase(DespesaCompartilhadaService s) {
+		return s;
+	}
 
-    @Bean
-    PrevisaoFluxoCaixaService previsaoFluxoCaixaService(PrevisaoMensalRepositoryPort previsoes,
-                                                         RecorrenciaRepositoryPort recorrencias,
-                                                         TransacaoRepositoryPort transacoes,
-                                                         FinanciamentoRepositoryPort financiamentos,
-                                                         ObterDataAtualPort dataAtual) {
-        return new PrevisaoFluxoCaixaService(previsoes, recorrencias, transacoes, financiamentos, dataAtual);
-    }
+	@Bean
+	RateioDespesaService rateioDespesaService(RateioDespesaRepositoryPort r, DespesaCompartilhadaRepositoryPort d) {
+		return new RateioDespesaService(r, d);
+	}
 
-    @Bean @Primary
-    PrevisaoFluxoCaixaUseCase previsaoFluxoCaixaUseCase(PrevisaoFluxoCaixaService service,
-                                                        PlatformTransactionManager manager) {
-        return transacional(PrevisaoFluxoCaixaUseCase.class, service, manager, null, Map.of());
-    }
+	@Bean
+	@Primary
+	RateioDespesaUseCase rateioDespesaUseCase(RateioDespesaService s) {
+		return s;
+	}
 
-    private <T> T transacional(Class<T> contract, T delegate, PlatformTransactionManager manager,
-                               OperacaoFinanceiraMetrics metrics, Map<String, String> metricas) {
-        TransactionTemplate escrita = new TransactionTemplate(manager);
-        TransactionTemplate leitura = somenteLeitura(manager);
-        return contract.cast(Proxy.newProxyInstance(contract.getClassLoader(), new Class<?>[]{contract}, (proxy, method, args) -> {
-            if (method.getDeclaringClass() == Object.class) {
-                return method.invoke(delegate, args);
-            }
-            Supplier<Object> acao = () -> invocar(method, delegate, args);
-            Supplier<Object> observada = () -> {
-                String operacao = metricas.get(method.getName());
-                return operacao == null ? acao.get() : metrics.medir(operacao, acao);
-            };
-            return (consulta(method.getName()) ? leitura : escrita).execute(status -> observada.get());
-        }));
-    }
+	@Bean
+	CompraParceladaService compraParceladaService(CompraParceladaRepositoryPort c, ContaRepositoryPort co,
+			CategoriaRepositoryPort ca, TransacaoRepositoryPort t, ObterDataAtualPort d) {
+		return new CompraParceladaService(c, co, ca, t, d);
+	}
 
-    private static boolean consulta(String metodo) {
-        return metodo.startsWith("listar") || metodo.startsWith("buscar") || metodo.startsWith("consultar");
-    }
+	@Bean
+	@Primary
+	CompraParceladaUseCase compraParceladaUseCase(CompraParceladaService s) {
+		return s;
+	}
 
-    private static Object invocar(java.lang.reflect.Method method, Object delegate, Object[] args) {
-        try {
-            return method.invoke(delegate, args);
-        } catch (IllegalAccessException exception) {
-            throw new IllegalStateException("Não foi possível invocar o caso de uso", exception);
-        } catch (InvocationTargetException exception) {
-            Throwable causa = exception.getCause();
-            if (causa instanceof RuntimeException runtimeException) {
-                throw runtimeException;
-            }
-            if (causa instanceof Error error) {
-                throw error;
-            }
-            throw new IllegalStateException("Falha ao executar o caso de uso", causa);
-        }
-    }
+	@Bean
+	BancoService bancoService(BancoRepositoryPort r) {
+		return new BancoService(r);
+	}
 
-    private static TransactionTemplate somenteLeitura(PlatformTransactionManager manager) {
-        TransactionTemplate template = new TransactionTemplate(manager);
-        template.setReadOnly(true);
-        return template;
-    }
+	@Bean
+	@Primary
+	BancoUseCase bancoUseCase(BancoService s) {
+		return s;
+	}
+
+	@Bean
+	ContaService contaService(ContaRepositoryPort c, BancoRepositoryPort b) {
+		return new ContaService(c, b);
+	}
+
+	@Bean
+	@Primary
+	ContaUseCase contaUseCase(ContaService s) {
+		return s;
+	}
+
+	@Bean
+	CategoriaService categoriaService(CategoriaRepositoryPort r) {
+		return new CategoriaService(r);
+	}
+
+	@Bean
+	@Primary
+	CategoriaUseCase categoriaUseCase(CategoriaService s) {
+		return s;
+	}
+
+	@Bean
+	ItemService itemService(ItemRepositoryPort i, CategoriaRepositoryPort c) {
+		return new ItemService(i, c);
+	}
+
+	@Bean
+	@Primary
+	ItemUseCase itemUseCase(ItemService s) {
+		return s;
+	}
+
+	@Bean
+	MeioPagamentoService meioPagamentoService(MeioPagamentoRepositoryPort r) {
+		return new MeioPagamentoService(r);
+	}
+
+	@Bean
+	@Primary
+	MeioPagamentoUseCase meioPagamentoUseCase(MeioPagamentoService s) {
+		return s;
+	}
+
+	@Bean
+	TransacaoService transacaoService(ContaRepositoryPort c, CategoriaRepositoryPort ca, MeioPagamentoRepositoryPort m,
+			ItemRepositoryPort i, TransacaoRepositoryPort t, ObterDataAtualPort d,
+			DespesaCompartilhadaRepositoryPort dc) {
+		return new TransacaoService(c, ca, m, i, t, d, dc);
+	}
+
+	@Bean
+	@Primary
+	TransacaoUseCase transacaoUseCase(TransacaoService s, OperacaoFinanceiraMetrics m) {
+		return new TransacaoUseCase() {
+			public com.financeiro.domain.model.Transacao registrar(Long u, RegistrarCommand c) {
+				return m.medir("transacao", () -> s.registrar(u, c));
+			}
+
+			public com.financeiro.domain.model.Transacao buscar(Long u, Long id) {
+				return s.buscar(u, id);
+			}
+
+			public java.util.List<com.financeiro.domain.model.Transacao> listar(Long u) {
+				return s.listar(u);
+			}
+
+			public com.financeiro.application.pagination.Pagina<com.financeiro.domain.model.Transacao> listar(Long u,
+					com.financeiro.application.pagination.Paginacao p) {
+				return s.listar(u, p);
+			}
+
+			public com.financeiro.domain.model.Transacao corrigir(Long u, Long id, RegistrarCommand c) {
+				return s.corrigir(u, id, c);
+			}
+
+			public com.financeiro.domain.model.Transacao estornar(Long u, Long id) {
+				return s.estornar(u, id);
+			}
+		};
+	}
+
+	@Bean
+	@Primary
+	RegistrarTransacaoUseCase registrarTransacaoUseCase(TransacaoService s, OperacaoFinanceiraMetrics m) {
+		return (u, c) -> m.medir("transacao", () -> s.registrar(u, c));
+	}
+
+	@Bean
+	ConsultarHistoricoTransacaoService consultarHistoricoTransacaoService(TransacaoRepositoryPort r) {
+		return new ConsultarHistoricoTransacaoService(r);
+	}
+
+	@Bean
+	@Primary
+	ConsultarHistoricoTransacaoUseCase consultarHistoricoTransacaoUseCase(ConsultarHistoricoTransacaoService s) {
+		return s;
+	}
+
+	@Bean
+	InvestimentoService investimentoService(InvestimentoRepositoryPort i, ContaRepositoryPort c) {
+		return new InvestimentoService(i, c);
+	}
+
+	@Bean
+	@Primary
+	InvestimentoUseCase investimentoUseCase(InvestimentoService s) {
+		return s;
+	}
+
+	@Bean
+	MovimentoInvestimentoService movimentoInvestimentoService(MovimentoInvestimentoRepositoryPort m,
+			InvestimentoUseCase i, RegistrarTransacaoUseCase t, TransacaoUseCase tc, ObterDataAtualPort d) {
+		return new MovimentoInvestimentoService(m, i, t, tc, d);
+	}
+
+	@Bean
+	@Primary
+	MovimentoInvestimentoUseCase movimentoInvestimentoUseCase(MovimentoInvestimentoService s) {
+		return s;
+	}
+
+	@Bean
+	PerfilUsuarioService perfilUsuarioService(UsuarioRepositoryPort u, RefreshTokenRepositoryPort r) {
+		return new PerfilUsuarioService(u, r);
+	}
+
+	@Bean
+	@Primary
+	GerenciarPerfilUseCase gerenciarPerfilUseCase(PerfilUsuarioService s) {
+		return s;
+	}
+
+	@Bean
+	RecorrenciaService recorrenciaService(RecorrenciaRepositoryPort r, ContaRepositoryPort c,
+			CategoriaRepositoryPort ca, MeioPagamentoRepositoryPort m, TransacaoRepositoryPort t,
+			ObterDataAtualPort d) {
+		return new RecorrenciaService(r, c, ca, m, t, d);
+	}
+
+	@Bean
+	@Primary
+	RecorrenciaUseCase recorrenciaUseCase(RecorrenciaService s) {
+		return s;
+	}
+
+	@Bean
+	ParcelaFinanciamentoService parcelaFinanciamentoService(ParcelaFinanciamentoRepositoryPort p,
+			FinanciamentoRepositoryPort f, ContaRepositoryPort c, TransacaoRepositoryPort t, ObterDataAtualPort d) {
+		return new ParcelaFinanciamentoService(p, f, c, t, d);
+	}
+
+	@Bean
+	@Primary
+	GerenciarParcelasFinanciamentoUseCase gerenciarParcelasFinanciamentoUseCase(ParcelaFinanciamentoService s) {
+		return new GerenciarParcelasFinanciamentoUseCase() {
+			public void gerar(com.financeiro.domain.model.Financiamento f) {
+				s.gerar(f);
+			}
+
+			public int excluirPendentesAPartirDe(com.financeiro.domain.model.Financiamento f, Long id) {
+				return s.excluirPendentesAPartirDe(f, id);
+			}
+
+			public java.util.List<com.financeiro.domain.model.ParcelaFinanciamento> excluirERecalcular(
+					com.financeiro.domain.model.Financiamento f, Long id) {
+				return s.excluirERecalcular(f, id);
+			}
+		};
+	}
+
+	@Bean
+	FinanciamentoService financiamentoService(FinanciamentoRepositoryPort f, ContaRepositoryPort c,
+			GerenciarParcelasFinanciamentoUseCase p, ParcelaFinanciamentoRepositoryPort pp, ObterDataAtualPort d) {
+		return new FinanciamentoService(f, c, p, pp, d);
+	}
+
+	@Bean
+	@Primary
+	FinanciamentoUseCase financiamentoUseCase(FinanciamentoService s) {
+		return s;
+	}
+
+	@Bean
+	@Primary
+	ParcelaFinanciamentoUseCase parcelaFinanciamentoUseCase(ParcelaFinanciamentoService s,
+			OperacaoFinanceiraMetrics m) {
+		return new ParcelaFinanciamentoUseCase() {
+			public java.util.List<com.financeiro.domain.model.ParcelaFinanciamento> listar(Long u, Long f) {
+				return s.listar(u, f);
+			}
+
+			public com.financeiro.application.pagination.Pagina<com.financeiro.domain.model.ParcelaFinanciamento> listar(
+					Long u, Long f, com.financeiro.application.pagination.Paginacao p) {
+				return s.listar(u, f, p);
+			}
+
+			public com.financeiro.domain.model.ParcelaFinanciamento pagarParcela(Long u, Long f, Long id,
+					java.time.LocalDate data) {
+				return m.medir("pagamento_parcela", () -> s.pagarParcela(u, f, id, data));
+			}
+
+			public int processarAtrasos(ProcessarAtrasosCommand c) {
+				return s.processarAtrasos(c);
+			}
+		};
+	}
+
+	@Bean
+	PrevisaoFluxoCaixaService previsaoFluxoCaixaService(PrevisaoMensalRepositoryPort p, RecorrenciaRepositoryPort r,
+			TransacaoRepositoryPort t, ParcelaFinanciamentoRepositoryPort pa, ObterDataAtualPort d) {
+		return new PrevisaoFluxoCaixaService(p, r, t, pa, d);
+	}
+
+	@Bean
+	@Primary
+	PrevisaoFluxoCaixaUseCase previsaoFluxoCaixaUseCase(PrevisaoFluxoCaixaService s) {
+		return s;
+	}
 }

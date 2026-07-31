@@ -10,10 +10,11 @@ import java.util.Optional;
 
 public interface ContaJpaRepository extends JpaRepository<ContaJpaEntity, Long> {
 
-    List<ContaJpaEntity> findByUsuarioId(Long usuarioId);
-    Page<ContaJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
+	List<ContaJpaEntity> findByUsuarioId(Long usuarioId);
 
-    Optional<ContaJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
+	Page<ContaJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
 
-    boolean existsByIdAndUsuarioId(Long id, Long usuarioId);
+	Optional<ContaJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
+
+	boolean existsByIdAndUsuarioId(Long id, Long usuarioId);
 }

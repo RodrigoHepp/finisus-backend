@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 /** Fonte da data operacional, definida pela infraestrutura. */
 public interface ObterDataAtualPort {
-    LocalDate obter();
-    LocalDateTime obterDataHora();
+	LocalDate obter();
+
+	LocalDateTime obterDataHora();
 }

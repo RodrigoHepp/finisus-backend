@@ -19,30 +19,30 @@ import java.time.LocalDateTime;
 @Setter
 public class CompraParceladaJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
+	@Column(name = "usuario_id")
+	private Long usuarioId;
 
-    private String descricao;
+	private String descricao;
 
-    @Column(name = "valor_total")
-    private BigDecimal valorTotal;
+	@Column(name = "valor_total")
+	private BigDecimal valorTotal;
 
-    @Column(name = "numero_parcelas")
-    private Integer numeroParcelas;
+	@Column(name = "numero_parcelas")
+	private Integer numeroParcelas;
 
-    @Column(name = "data_compra")
-    private LocalDate dataCompra;
+	@Column(name = "data_compra")
+	private LocalDate dataCompra;
 
-    @Column(name = "categoria_id")
-    private Long categoriaId;
+	@Column(name = "categoria_id")
+	private Long categoriaId;
 
-    @Column(name = "conta_id")
-    private Long contaId;
+	@Column(name = "conta_id")
+	private Long contaId;
 
-    @Column(name = "cancelada_em")
-    private LocalDateTime canceladaEm;
+	@Column(name = "cancelada_em")
+	private LocalDateTime canceladaEm;
 }

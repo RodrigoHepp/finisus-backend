@@ -20,18 +20,21 @@ import java.math.BigDecimal;
 @Setter
 public class TransacaoItemJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transacao_id", nullable = false)
-    private TransacaoJpaEntity transacao;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "transacao_id", nullable = false)
+	private TransacaoJpaEntity transacao;
 
-    private String descricao;
+	@Column(name = "item_id")
+	private Long itemId;
 
-    private BigDecimal valor;
+	private String descricao;
 
-    @Column(name = "categoria_id")
-    private Long categoriaId;
+	private BigDecimal valor;
+
+	@Column(name = "categoria_id")
+	private Long categoriaId;
 }

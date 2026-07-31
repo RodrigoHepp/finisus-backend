@@ -9,14 +9,15 @@ import java.util.Optional;
 
 public interface BancoRepositoryPort {
 
-    Banco salvar(Banco banco);
+	Banco salvar(Banco banco);
 
-    Optional<Banco> buscarPorId(Long id);
+	Optional<Banco> buscarPorId(Long id);
 
-    List<Banco> listarSistema();
+	List<Banco> listarSistema();
 
-    List<Banco> listarPorUsuario(Long usuarioId);
+	List<Banco> listarPorUsuario(Long usuarioId);
 
-    List<Banco> listarDisponiveisParaUsuario(Long usuarioId);
-    Pagina<Banco> listarDisponiveisParaUsuario(Long usuarioId, Paginacao paginacao);
+	List<Banco> listarDisponiveisParaUsuario(Long usuarioId);
+
+	Pagina<Banco> listarDisponiveisParaUsuario(Long usuarioId, Paginacao paginacao);
 }

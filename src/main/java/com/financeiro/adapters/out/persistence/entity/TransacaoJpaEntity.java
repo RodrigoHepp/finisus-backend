@@ -27,52 +27,52 @@ import java.util.List;
 @Setter
 public class TransacaoJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
+	@Column(name = "usuario_id")
+	private Long usuarioId;
 
-    @Enumerated(EnumType.STRING)
-    private TipoTransacao tipo;
+	@Enumerated(EnumType.STRING)
+	private TipoTransacao tipo;
 
-    private BigDecimal valor;
+	private BigDecimal valor;
 
-    private LocalDate data;
+	private LocalDate data;
 
-    private String descricao;
+	private String descricao;
 
-    @Column(name = "conta_id")
-    private Long contaId;
+	@Column(name = "conta_id")
+	private Long contaId;
 
-    @Column(name = "categoria_id")
-    private Long categoriaId;
+	@Column(name = "categoria_id")
+	private Long categoriaId;
 
-    @Column(name = "meio_pagamento_id")
-    private Long meioPagamentoId;
+	@Column(name = "meio_pagamento_id")
+	private Long meioPagamentoId;
 
-    @Column(name = "fatura_id")
-    private Long faturaId;
+	@Column(name = "fatura_id")
+	private Long faturaId;
 
-    @Column(name = "compra_parcelada_id")
-    private Long compraParceladaId;
+	@Column(name = "compra_parcelada_id")
+	private Long compraParceladaId;
 
-    @Column(name = "recorrencia_id")
-    private Long recorrenciaId;
+	@Column(name = "recorrencia_id")
+	private Long recorrenciaId;
 
-    @Column(name = "despesa_compartilhada_id")
-    private Long despesaCompartilhadaId;
+	@Column(name = "despesa_compartilhada_id")
+	private Long despesaCompartilhadaId;
 
-    @Column(name = "estornado_em")
-    private LocalDateTime estornadoEm;
+	@Column(name = "estornado_em")
+	private LocalDateTime estornadoEm;
 
-    @Version
-    private Long version;
+	@Version
+	private Long version;
 
-    @Column(name = "criado_em", insertable = false, updatable = false)
-    private LocalDateTime criadoEm;
+	@Column(name = "criado_em", insertable = false, updatable = false)
+	private LocalDateTime criadoEm;
 
-    @OneToMany(mappedBy = "transacao", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TransacaoItemJpaEntity> itens = new ArrayList<>();
+	@OneToMany(mappedBy = "transacao", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<TransacaoItemJpaEntity> itens = new ArrayList<>();
 }

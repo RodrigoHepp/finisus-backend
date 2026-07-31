@@ -17,22 +17,22 @@ import java.math.BigDecimal;
 @Setter
 public class CartaoCreditoJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
+	@Column(name = "usuario_id")
+	private Long usuarioId;
 
-    private String nome;
+	private String nome;
 
-    private BigDecimal limite;
+	private BigDecimal limite;
 
-    @Column(name = "dia_fechamento")
-    private Integer diaFechamento;
+	@Column(name = "dia_fechamento")
+	private Integer diaFechamento;
 
-    @Column(name = "dia_vencimento")
-    private Integer diaVencimento;
+	@Column(name = "dia_vencimento")
+	private Integer diaVencimento;
 
-    private boolean ativo;
+	private boolean ativo;
 }

@@ -10,23 +10,27 @@ import java.util.Optional;
 
 public interface TransacaoRepositoryPort {
 
-    Transacao salvar(Transacao transacao);
+	Transacao salvar(Transacao transacao);
 
-    Optional<Transacao> buscarPorId(Long id);
+	Optional<Transacao> buscarPorId(Long id);
 
-    Optional<Transacao> buscarPorIdEUsuario(Long id, Long usuarioId);
+	Optional<Transacao> buscarPorIdEUsuario(Long id, Long usuarioId);
 
-    List<Transacao> listarPorUsuario(Long usuarioId);
-    Pagina<Transacao> listarPorUsuario(Long usuarioId, Paginacao paginacao);
+	Optional<Transacao> buscarPorIdEUsuarioParaAtualizacao(Long id, Long usuarioId);
 
-    List<Transacao> listarPorFatura(Long faturaId);
+	List<Transacao> listarPorUsuario(Long usuarioId);
 
-    List<Transacao> listarPorCompraParcelada(Long compraParceladaId);
+	Pagina<Transacao> listarPorUsuario(Long usuarioId, Paginacao paginacao);
 
-    List<Transacao> listarPorConta(Long contaId);
+	List<Transacao> listarPorFatura(Long faturaId);
 
-    TransacaoHistorico salvarHistorico(TransacaoHistorico historico);
+	List<Transacao> listarPorCompraParcelada(Long compraParceladaId);
 
-    List<TransacaoHistorico> listarHistoricoPorTransacao(Long transacaoId);
-    Pagina<TransacaoHistorico> listarHistoricoPorTransacao(Long transacaoId, Paginacao paginacao);
+	List<Transacao> listarPorConta(Long contaId);
+
+	TransacaoHistorico salvarHistorico(TransacaoHistorico historico);
+
+	List<TransacaoHistorico> listarHistoricoPorTransacao(Long transacaoId);
+
+	Pagina<TransacaoHistorico> listarHistoricoPorTransacao(Long transacaoId, Paginacao paginacao);
 }

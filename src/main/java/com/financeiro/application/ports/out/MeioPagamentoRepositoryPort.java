@@ -9,12 +9,13 @@ import java.util.Optional;
 
 public interface MeioPagamentoRepositoryPort {
 
-    MeioPagamento salvar(MeioPagamento meioPagamento);
+	MeioPagamento salvar(MeioPagamento meioPagamento);
 
-    Optional<MeioPagamento> buscarPorId(Long id);
+	Optional<MeioPagamento> buscarPorId(Long id);
 
-    Optional<MeioPagamento> buscarPorIdEUsuario(Long id, Long usuarioId);
+	Optional<MeioPagamento> buscarPorIdEUsuario(Long id, Long usuarioId);
 
-    List<MeioPagamento> listarPorUsuario(Long usuarioId);
-    Pagina<MeioPagamento> listarPorUsuario(Long usuarioId, Paginacao paginacao);
+	List<MeioPagamento> listarPorUsuario(Long usuarioId);
+
+	Pagina<MeioPagamento> listarPorUsuario(Long usuarioId, Paginacao paginacao);
 }

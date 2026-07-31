@@ -14,16 +14,17 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 @Configuration
 public class JwtEncoderDecoderConfig {
 
-    @Bean
-    public JwtEncoder jwtEncoder(RSAKey rsaKey) {
-        return new NimbusJwtEncoder(new ImmutableJWKSet<>(new com.nimbusds.jose.jwk.JWKSet(rsaKey)));
-    }
+	@Bean
+	public JwtEncoder jwtEncoder(RSAKey rsaKey) {
+		return new NimbusJwtEncoder(new ImmutableJWKSet<>(new com.nimbusds.jose.jwk.JWKSet(rsaKey)));
+	}
 
-    @Bean
-    public JwtDecoder jwtDecoder(RSAKey rsaKey, JwtProperties jwtProperties, UsuarioSessaoJwtValidator usuarioSessaoJwtValidator) throws Exception {
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
-        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
-                JwtValidators.createDefaultWithIssuer(jwtProperties.issuer()), usuarioSessaoJwtValidator));
-        return decoder;
-    }
+	@Bean
+	public JwtDecoder jwtDecoder(RSAKey rsaKey, JwtProperties jwtProperties,
+			UsuarioSessaoJwtValidator usuarioSessaoJwtValidator) throws Exception {
+		NimbusJwtDecoder decoder = NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
+		decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
+				JwtValidators.createDefaultWithIssuer(jwtProperties.issuer()), usuarioSessaoJwtValidator));
+		return decoder;
+	}
 }

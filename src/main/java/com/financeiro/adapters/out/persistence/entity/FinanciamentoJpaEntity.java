@@ -13,8 +13,12 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.financeiro.domain.model.StatusFinanciamento;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Table(name = "financiamento")
@@ -22,29 +26,38 @@ import java.util.List;
 @Setter
 public class FinanciamentoJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
+	@Column(name = "usuario_id")
+	private Long usuarioId;
 
-    private String descricao;
+	private String descricao;
 
-    private BigDecimal principal;
+	private BigDecimal principal;
 
-    @Column(name = "taxa_juros_mensal")
-    private BigDecimal taxaJurosMensal;
+	@Column(name = "taxa_juros_mensal")
+	private BigDecimal taxaJurosMensal;
 
-    @Column(name = "numero_parcelas")
-    private Integer numeroParcelas;
+	@Column(name = "numero_parcelas")
+	private Integer numeroParcelas;
 
-    @Column(name = "data_inicio")
-    private LocalDate dataInicio;
+	@Column(name = "data_inicio")
+	private LocalDate dataInicio;
 
-    @Column(name = "conta_id")
-    private Long contaId;
+	@Column(name = "conta_id")
+	private Long contaId;
 
-    @OneToMany(mappedBy = "financiamento", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ParcelaFinanciamentoJpaEntity> parcelas = new ArrayList<>();
+	@Column(name = "finalizado_em")
+	private LocalDateTime finalizadoEm;
+
+	@Enumerated(EnumType.STRING)
+	private StatusFinanciamento status;
+
+	@Column(name = "cancelada_em")
+	private LocalDateTime canceladaEm;
+
+	@OneToMany(mappedBy = "financiamento", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ParcelaFinanciamentoJpaEntity> parcelas = new ArrayList<>();
 }

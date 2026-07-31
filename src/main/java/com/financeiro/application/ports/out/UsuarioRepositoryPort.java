@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface UsuarioRepositoryPort {
 
-    Usuario salvar(Usuario usuario);
+	Usuario salvar(Usuario usuario);
 
-    Optional<Usuario> buscarPorId(Long id);
+	Optional<Usuario> buscarPorId(Long id);
 
-    Optional<Usuario> buscarPorEmail(String email);
+	Optional<Usuario> buscarPorEmail(String email);
 
-    boolean existePorEmail(String email);
+	boolean existePorEmail(String email);
 
-    List<Usuario> listarAtivos();
+	List<Usuario> listarAtivos();
 }

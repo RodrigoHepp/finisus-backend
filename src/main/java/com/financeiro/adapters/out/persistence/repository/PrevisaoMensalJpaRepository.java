@@ -11,8 +11,11 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface PrevisaoMensalJpaRepository extends JpaRepository<PrevisaoMensalJpaEntity, Long> {
-    List<PrevisaoMensalJpaEntity> findByUsuarioIdAndAnoMes(Long usuarioId, String anoMes);
-    Page<PrevisaoMensalJpaEntity> findByUsuarioIdAndAnoMes(Long usuarioId, String anoMes, Pageable pageable);
-    @Modifying @Query("DELETE FROM PrevisaoMensalJpaEntity p WHERE p.usuarioId = :usuarioId AND p.anoMes = :anoMes")
-    void deleteByUsuarioIdAndAnoMes(@Param("usuarioId") Long usuarioId, @Param("anoMes") String anoMes);
+	List<PrevisaoMensalJpaEntity> findByUsuarioIdAndAnoMes(Long usuarioId, String anoMes);
+
+	Page<PrevisaoMensalJpaEntity> findByUsuarioIdAndAnoMes(Long usuarioId, String anoMes, Pageable pageable);
+
+	@Modifying
+	@Query("DELETE FROM PrevisaoMensalJpaEntity p WHERE p.usuarioId = :usuarioId AND p.anoMes = :anoMes")
+	void deleteByUsuarioIdAndAnoMes(@Param("usuarioId") Long usuarioId, @Param("anoMes") String anoMes);
 }

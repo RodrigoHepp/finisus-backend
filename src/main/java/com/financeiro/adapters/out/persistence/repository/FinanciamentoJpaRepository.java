@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FinanciamentoJpaRepository extends JpaRepository<FinanciamentoJpaEntity, Long> {
-    Optional<FinanciamentoJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
-    List<FinanciamentoJpaEntity> findByUsuarioId(Long usuarioId);
-    Page<FinanciamentoJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
+	Optional<FinanciamentoJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
+
+	List<FinanciamentoJpaEntity> findByUsuarioId(Long usuarioId);
+
+	Page<FinanciamentoJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
 }

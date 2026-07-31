@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RecorrenciaGeracaoJpaRepository extends JpaRepository<RecorrenciaGeracaoJpaEntity, Long> {
 
-    boolean existsByRecorrenciaIdAndAnoMes(Long recorrenciaId, String anoMes);
+	boolean existsByRecorrenciaIdAndAnoMes(Long recorrenciaId, String anoMes);
 }

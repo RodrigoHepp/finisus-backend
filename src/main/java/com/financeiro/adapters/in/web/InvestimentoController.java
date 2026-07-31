@@ -1,18 +1,7 @@
 package com.financeiro.adapters.in.web;
 
-import com.financeiro.application.pagination.Paginacao;
-import com.financeiro.application.ports.in.InvestimentoUseCase;
-import com.financeiro.domain.model.Investimento;
-import com.financeiro.domain.model.MovimentoInvestimento;
-import com.financeiro.domain.model.TipoInvestimento;
-import com.financeiro.domain.model.TipoMovimentoInvestimento;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import com.financeiro.adapters.in.web.security.UsuarioAtual;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,63 +14,74 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import com.financeiro.application.pagination.Paginacao;
+import com.financeiro.application.ports.in.InvestimentoUseCase;
+import com.financeiro.domain.model.Investimento;
+import com.financeiro.domain.model.TipoInvestimento;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 @RestController
 @RequestMapping("/api/v1/investimentos")
 @Validated
+@Tag(name = "Investimentos", description = "Cadastro e manutenção de investimentos.")
+@SecurityRequirement(name = "bearerAuth")
 public class InvestimentoController {
-    private final InvestimentoUseCase useCase;
+	private final InvestimentoUseCase useCase;
 
-    public InvestimentoController(InvestimentoUseCase useCase) {
-        this.useCase = useCase;
-    }
+	public InvestimentoController(InvestimentoUseCase useCase) {
+		this.useCase = useCase;
+	}
 
-    @GetMapping
-    PaginaResponse<Response> listar(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") @jakarta.validation.constraints.PositiveOrZero int pagina,
-                                    @RequestParam(defaultValue = "20") @jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(100) int tamanho) {
-        return PaginaResponse.from(useCase.listar(id(jwt), new Paginacao(pagina, tamanho)).map(Response::from));
-    }
+	@GetMapping
+	PaginaResponse<Response> listar(@UsuarioAtual Long usuarioId,
+			@RequestParam(defaultValue = "0") @PositiveOrZero int pagina,
+			@RequestParam(defaultValue = "20") @Min(1) @Max(100) int tamanho) {
+		return PaginaResponse.from(useCase.listar(usuarioId, new Paginacao(pagina, tamanho)).map(Response::from));
+	}
 
-    @GetMapping("/{investimentoId}")
-    Response buscar(@AuthenticationPrincipal Jwt jwt, @PathVariable @jakarta.validation.constraints.Positive Long investimentoId) {
-        return Response.from(useCase.buscar(id(jwt), investimentoId));
-    }
+	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
+	Response criar(@UsuarioAtual Long usuarioId, @Valid @RequestBody Request request) {
+		return Response.from(useCase.criar(usuarioId,
+				new InvestimentoUseCase.CriarCommand(request.nome(), request.tipo(), request.contaOrigemId())));
+	}
 
-    @PatchMapping("/{investimentoId}")
-    Response atualizar(@AuthenticationPrincipal Jwt jwt, @PathVariable @jakarta.validation.constraints.Positive Long investimentoId, @Valid @RequestBody CriarRequest request) {
-        return Response.from(useCase.atualizar(id(jwt), investimentoId, new InvestimentoUseCase.CriarCommand(request.nome(), request.tipo(), request.contaOrigemId())));
-    }
+	@GetMapping("/{investimentoId}")
+	Response buscar(@UsuarioAtual Long usuarioId, @PathVariable @Positive Long investimentoId) {
+		return Response.from(useCase.buscar(usuarioId, investimentoId));
+	}
 
-    @DeleteMapping("/{investimentoId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    void inativar(@AuthenticationPrincipal Jwt jwt, @PathVariable @jakarta.validation.constraints.Positive Long investimentoId) {
-        useCase.inativar(id(jwt), investimentoId);
-    }
+	@PatchMapping("/{investimentoId}")
+	Response atualizar(@UsuarioAtual Long usuarioId, @PathVariable @Positive Long investimentoId,
+			@Valid @RequestBody Request request) {
+		return Response.from(useCase.atualizar(usuarioId, investimentoId,
+				new InvestimentoUseCase.CriarCommand(request.nome(), request.tipo(), request.contaOrigemId())));
+	}
 
-    @GetMapping("/{investimentoId}/movimentos")
-    PaginaResponse<MovimentoResponse> movimentos(@AuthenticationPrincipal Jwt jwt, @PathVariable @jakarta.validation.constraints.Positive Long investimentoId,
-                                                 @RequestParam(defaultValue = "0") @jakarta.validation.constraints.PositiveOrZero int pagina, @RequestParam(defaultValue = "20") @jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(100) int tamanho) {
-        return PaginaResponse.from(useCase.listarMovimentos(id(jwt), investimentoId, new Paginacao(pagina, tamanho)).map(MovimentoResponse::from));
-    }
+	@DeleteMapping("/{investimentoId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void inativar(@UsuarioAtual Long usuarioId, @PathVariable @Positive Long investimentoId) {
+		useCase.inativar(usuarioId, investimentoId);
+	}
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    Response criar(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CriarRequest request) {
-        return Response.from(useCase.criar(id(jwt), new InvestimentoUseCase.CriarCommand(request.nome(), request.tipo(), request.contaOrigemId())));
-    }
+	record Request(@NotBlank @Size(max = 150) String nome, @NotNull TipoInvestimento tipo,
+			@NotNull @Positive Long contaOrigemId) {
+	}
 
-    @PostMapping("/movimentos")
-    @ResponseStatus(HttpStatus.CREATED)
-    MovimentoResponse movimentar(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody MovimentoRequest request) {
-        return MovimentoResponse.from(useCase.movimentar(id(jwt), new InvestimentoUseCase.MovimentoCommand(request.investimentoId(), request.tipo(), request.valor(), request.data())));
-    }
-
-    private Long id(Jwt jwt) { return Long.valueOf(jwt.getSubject()); }
-
-    record CriarRequest(@NotBlank String nome, @NotNull TipoInvestimento tipo, @NotNull @jakarta.validation.constraints.Positive Long contaOrigemId) {}
-    record MovimentoRequest(@NotNull @jakarta.validation.constraints.Positive Long investimentoId, @NotNull TipoMovimentoInvestimento tipo, @NotNull @DecimalMin("0.01") BigDecimal valor, @NotNull LocalDate data) {}
-    record Response(Long id, String nome, TipoInvestimento tipo, Long contaOrigemId, boolean ativo) { static Response from(Investimento investimento) { return new Response(investimento.getId(), investimento.getNome(), investimento.getTipo(), investimento.getContaOrigemId(), investimento.isAtivo()); } }
-    record MovimentoResponse(Long id, Long investimentoId, TipoMovimentoInvestimento tipo, BigDecimal valor, LocalDate data, Long transacaoId) { static MovimentoResponse from(MovimentoInvestimento movimento) { return new MovimentoResponse(movimento.getId(), movimento.getInvestimentoId(), movimento.getTipo(), movimento.getValor().valor(), movimento.getData(), movimento.getTransacaoId()); } }
+	record Response(Long id, String nome, TipoInvestimento tipo, Long contaOrigemId, boolean ativo) {
+		static Response from(Investimento investimento) {
+			return new Response(investimento.getId(), investimento.getNome(), investimento.getTipo(),
+					investimento.getContaOrigemId(), investimento.isAtivo());
+		}
+	}
 }

@@ -1,24 +1,25 @@
 package com.financeiro.adapters.out.persistence;
 
-import com.financeiro.application.pagination.Pagina;
-import com.financeiro.application.pagination.Paginacao;
+import java.util.function.Function;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.util.function.Function;
+import com.financeiro.application.pagination.Pagina;
+import com.financeiro.application.pagination.Paginacao;
 
 final class PaginaJpaMapper {
-    private PaginaJpaMapper() {
-    }
+	private PaginaJpaMapper() {
+	}
 
-    static Pageable pageable(Paginacao paginacao, Sort sort) {
-        return PageRequest.of(paginacao.pagina(), paginacao.tamanho(), sort);
-    }
+	static Pageable pageable(Paginacao paginacao, Sort sort) {
+		return PageRequest.of(paginacao.pagina(), paginacao.tamanho(), sort);
+	}
 
-    static <E, D> Pagina<D> map(Page<E> page, Function<E, D> mapper) {
-        return new Pagina<>(page.getContent().stream().map(mapper).toList(), page.getNumber(), page.getSize(),
-                page.getTotalElements(), page.getTotalPages());
-    }
+	static <E, D> Pagina<D> map(Page<E> page, Function<E, D> mapper) {
+		return new Pagina<>(page.getContent().stream().map(mapper).toList(), page.getNumber(), page.getSize(),
+				page.getTotalElements(), page.getTotalPages());
+	}
 }

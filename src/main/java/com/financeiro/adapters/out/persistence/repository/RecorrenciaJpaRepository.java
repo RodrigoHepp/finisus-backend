@@ -10,10 +10,11 @@ import java.util.Optional;
 
 public interface RecorrenciaJpaRepository extends JpaRepository<RecorrenciaJpaEntity, Long> {
 
-    Optional<RecorrenciaJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
+	Optional<RecorrenciaJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
 
-    List<RecorrenciaJpaEntity> findByUsuarioId(Long usuarioId);
-    Page<RecorrenciaJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
+	List<RecorrenciaJpaEntity> findByUsuarioId(Long usuarioId);
 
-    List<RecorrenciaJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId);
+	Page<RecorrenciaJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
+
+	List<RecorrenciaJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId);
 }

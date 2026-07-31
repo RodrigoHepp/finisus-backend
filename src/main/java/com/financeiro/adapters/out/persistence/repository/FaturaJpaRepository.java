@@ -14,12 +14,13 @@ import java.util.Optional;
 
 public interface FaturaJpaRepository extends JpaRepository<FaturaJpaEntity, Long> {
 
-    Optional<FaturaJpaEntity> findByCartaoIdAndAnoMes(Long cartaoId, String anoMes);
+	Optional<FaturaJpaEntity> findByCartaoIdAndAnoMes(Long cartaoId, String anoMes);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select f from FaturaJpaEntity f where f.id = :id")
-    Optional<FaturaJpaEntity> findByIdForUpdate(@Param("id") Long id);
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select f from FaturaJpaEntity f where f.id = :id")
+	Optional<FaturaJpaEntity> findByIdForUpdate(@Param("id") Long id);
 
-    List<FaturaJpaEntity> findByCartaoId(Long cartaoId);
-    Page<FaturaJpaEntity> findByCartaoId(Long cartaoId, Pageable pageable);
+	List<FaturaJpaEntity> findByCartaoId(Long cartaoId);
+
+	Page<FaturaJpaEntity> findByCartaoId(Long cartaoId, Pageable pageable);
 }

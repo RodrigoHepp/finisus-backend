@@ -12,21 +12,28 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface ParcelaFinanciamentoJpaRepository extends JpaRepository<ParcelaFinanciamentoJpaEntity, Long> {
-    List<ParcelaFinanciamentoJpaEntity> findByFinanciamentoIdOrderByNumero(Long financiamentoId);
-    Page<ParcelaFinanciamentoJpaEntity> findByFinanciamentoId(Long financiamentoId, Pageable pageable);
-    List<ParcelaFinanciamentoJpaEntity> findByStatusAndDataVencimentoBefore(StatusParcelaFinanciamento status, LocalDate data);
-    @Query("""
-            select p from ParcelaFinanciamentoJpaEntity p
-            join fetch p.financiamento f
-            where f.usuarioId = :usuarioId
-              and p.status <> :statusPaga
-              and p.dataVencimento >= :inicio
-              and p.dataVencimento < :fimExclusivo
-            order by p.dataVencimento, p.id
-            """)
-    List<ParcelaFinanciamentoJpaEntity> findRelevantByUsuarioIdAndPeriodo(
-            @Param("usuarioId") Long usuarioId,
-            @Param("inicio") LocalDate inicio,
-            @Param("fimExclusivo") LocalDate fimExclusivo,
-            @Param("statusPaga") StatusParcelaFinanciamento statusPaga);
+	List<ParcelaFinanciamentoJpaEntity> findByFinanciamentoIdOrderByNumero(Long financiamentoId);
+
+	Page<ParcelaFinanciamentoJpaEntity> findByFinanciamentoId(Long financiamentoId, Pageable pageable);
+
+	List<ParcelaFinanciamentoJpaEntity> findByStatusAndDataVencimentoBefore(StatusParcelaFinanciamento status,
+			LocalDate data);
+
+	List<ParcelaFinanciamentoJpaEntity> findByFinanciamentoIdAndNumeroGreaterThanEqualAndStatusNot(Long financiamentoId,
+			Integer numero, StatusParcelaFinanciamento status);
+
+	boolean existsByFinanciamentoIdAndStatus(Long financiamentoId, StatusParcelaFinanciamento status);
+
+	@Query("""
+			select p from ParcelaFinanciamentoJpaEntity p
+			join fetch p.financiamento f
+			where f.usuarioId = :usuarioId
+			  and p.status <> :statusPaga
+			  and p.dataVencimento >= :inicio
+			  and p.dataVencimento < :fimExclusivo
+			order by p.dataVencimento, p.id
+			""")
+	List<ParcelaFinanciamentoJpaEntity> findRelevantByUsuarioIdAndPeriodo(@Param("usuarioId") Long usuarioId,
+			@Param("inicio") LocalDate inicio, @Param("fimExclusivo") LocalDate fimExclusivo,
+			@Param("statusPaga") StatusParcelaFinanciamento statusPaga);
 }

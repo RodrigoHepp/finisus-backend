@@ -11,12 +11,12 @@ import java.util.List;
 
 public interface BancoJpaRepository extends JpaRepository<BancoJpaEntity, Long> {
 
-    List<BancoJpaEntity> findByUsuarioIdIsNullAndAtivoTrue();
+	List<BancoJpaEntity> findByUsuarioIdIsNullAndAtivoTrue();
 
-    List<BancoJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId);
+	List<BancoJpaEntity> findByUsuarioIdAndAtivoTrue(Long usuarioId);
 
-    List<BancoJpaEntity> findByUsuarioIdIsNullOrUsuarioId(Long usuarioId);
+	List<BancoJpaEntity> findByUsuarioIdIsNullOrUsuarioId(Long usuarioId);
 
-    @Query("select b from BancoJpaEntity b where b.ativo = true and (b.usuarioId is null or b.usuarioId = :usuarioId)")
-    Page<BancoJpaEntity> findDisponiveisParaUsuario(@Param("usuarioId") Long usuarioId, Pageable pageable);
+	@Query("select b from BancoJpaEntity b where b.ativo = true and (b.usuarioId is null or b.usuarioId = :usuarioId)")
+	Page<BancoJpaEntity> findDisponiveisParaUsuario(@Param("usuarioId") Long usuarioId, Pageable pageable);
 }

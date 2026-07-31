@@ -17,25 +17,25 @@ import java.time.LocalDateTime;
 @Setter
 public class TransacaoHistoricoJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "transacao_id")
-    private Long transacaoId;
+	@Column(name = "transacao_id")
+	private Long transacaoId;
 
-    @Column(name = "campo_alterado")
-    private String campoAlterado;
+	@Column(name = "campo_alterado")
+	private String campoAlterado;
 
-    @Column(name = "valor_anterior")
-    private String valorAnterior;
+	@Column(name = "valor_anterior")
+	private String valorAnterior;
 
-    @Column(name = "valor_novo")
-    private String valorNovo;
+	@Column(name = "valor_novo")
+	private String valorNovo;
 
-    @Column(name = "alterado_por")
-    private Long alteradoPor;
+	@Column(name = "alterado_por")
+	private Long alteradoPor;
 
-    @Column(name = "alterado_em")
-    private LocalDateTime alteradoEm;
+	@Column(name = "alterado_em")
+	private LocalDateTime alteradoEm;
 }

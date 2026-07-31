@@ -18,20 +18,20 @@ import java.time.LocalDateTime;
 @Setter
 public class RefreshTokenJpaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String token;
+	private String token;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
+	@Column(name = "usuario_id")
+	private Long usuarioId;
 
-    @Column(name = "expira_em")
-    private Instant expiraEm;
+	@Column(name = "expira_em")
+	private Instant expiraEm;
 
-    private boolean invalidado;
+	private boolean invalidado;
 
-    @Column(name = "criado_em")
-    private LocalDateTime criadoEm;
+	@Column(name = "criado_em")
+	private LocalDateTime criadoEm;
 }

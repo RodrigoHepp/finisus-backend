@@ -5,6 +5,6 @@ package com.financeiro.infrastructure.config;
  * comportamento para preservar compatibilidade de componente até sua remoção.
  */
 public final class PaginacaoResponseAdvice {
-    private PaginacaoResponseAdvice() {
-    }
+	private PaginacaoResponseAdvice() {
+	}
 }
