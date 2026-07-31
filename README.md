@@ -48,6 +48,14 @@ mvn "-Dspring-boot.run.profiles=dev" spring-boot:run
 
 O código-fonte usa o pacote-base `com.finisus`. O domínio contém modelos e invariantes; a aplicação define casos de uso e portas; adapters expõem HTTP e persistência; a infraestrutura reúne configuração, segurança, observabilidade, tempo e agendamento.
 
+## Licença
+
+Copyright © 2026 Rodrigo Joel Hepp.
+
+O Finisus é disponibilizado sob a [GNU Affero General Public License v3.0 ou posterior](LICENSE). A AGPL permite uso comercial, alteração e redistribuição, desde que suas obrigações sejam cumpridas.
+
+Quem precisar usar, modificar ou distribuir o Finisus sem cumprir a AGPL poderá solicitar uma licença comercial alternativa. Consulte [Licenciamento comercial](COMMERCIAL-LICENSE.md). Contribuições aceitas pelo projeto seguem o [acordo de contribuição](CLA.md).
+
 ## Documentação
 
 - [Arquitetura](docs/arquitetura.md)
