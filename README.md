@@ -1,6 +1,6 @@
 # Finisus Backend
 
-API de finanças pessoais em Java 25 e Spring Boot. O pacote-base adotado é `com.financeiro`.
+API de finanças pessoais em Java 25 e Spring Boot. O pacote-base adotado é `com.finisus`.
 
 Os recursos financeiros são expostos por controllers próprios; operações compostas, como refinanciamento, pagamento, cancelamento e estorno, mantêm consistência entre as entidades envolvidas. Itens são cadastrados em um catálogo pessoal e vinculados às linhas de transação, preservando o histórico de cada lançamento. Gastos de cartão são agrupados por fatura, que consulta suas transações e itens sem possuir itens diretamente.
 

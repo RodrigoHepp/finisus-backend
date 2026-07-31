@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.financeiro</groupId>
+    <groupId>com.finisus</groupId>
     <artifactId>finisus-backend</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <name>finisus-backend</name>

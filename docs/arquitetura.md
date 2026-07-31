@@ -1,6 +1,6 @@
 # Arquitetura
 
-O código usa o pacote-base `com.financeiro`. A referência anterior a `br.com.finisus` não corresponde ao código, ao `groupId` Maven nem à configuração atual e foi descontinuada.
+O código usa o pacote-base `com.finisus`, coerente com o `groupId` Maven e a configuração atual.
 
 O domínio não depende de Spring. Casos de uso dependem de portas e os adapters web e JPA realizam a integração com HTTP, segurança e persistência. O relógio operacional é exposto por `ObterDataAtualPort` e implementado com `Clock` na infraestrutura.
 
