@@ -1,9 +1,17 @@
 # Autenticação
 
-As rotas protegidas usam access tokens JWT no cabeçalho `Authorization: Bearer <token>`.
+O Finisus autentica requisições protegidas com JWT assinado por chaves RSA. O access token deve ser enviado no cabeçalho `Authorization: Bearer <token>`.
 
-O token de acesso contém `sub` como o identificador numérico do usuário, além de `type=access` e da versão da sessão. Antes de uma requisição ser autenticada, `UsuarioSessaoJwtValidator` confirma o tipo do token, o usuário ativo e a versão de sessão atual.
+## Fluxos disponíveis
 
-Após a validação, a infraestrutura converte o JWT em `UsuarioAutenticado`. Controllers recebem somente o ID pelo parâmetro `@UsuarioAtual Long usuarioId`; os casos de uso continuam recebendo esse identificador explicitamente e não dependem de Spring Security, JWT ou `SecurityContext`.
+- `POST /api/v1/auth/cadastro` cria um usuário e retorna seus dados públicos.
+- `POST /api/v1/auth/login` recebe e-mail e senha, e retorna access token, refresh token e a data de expiração do access token.
+- `POST /api/v1/auth/refresh` recebe um refresh token e emite um novo par de tokens.
 
-Tokens não devem ser incluídos em logs, respostas de erro ou configurações versionadas.
+O access token contém o identificador numérico do usuário em `sub`, o tipo `access` e a versão da sessão. Antes de autenticar a requisição, `UsuarioSessaoJwtValidator` verifica o tipo do token, se o usuário está ativo e se a versão da sessão continua válida.
+
+Depois da validação, a infraestrutura converte o JWT em `UsuarioAutenticado`. Controllers recebem somente o ID por `@UsuarioAtual`; casos de uso não dependem de JWT, Spring Security ou `SecurityContext`.
+
+## Configuração segura
+
+O perfil `dev` recebe os locais das chaves pelas variáveis `FINISUS_JWT_PRIVATE_KEY_LOCATION` e `FINISUS_JWT_PUBLIC_KEY_LOCATION`. Senhas, chaves privadas, tokens e arquivos de configuração local não devem ser versionados, registrados em logs nem enviados em respostas de erro.

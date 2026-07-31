@@ -1,29 +1,38 @@
 # Arquitetura
 
-O código usa o pacote-base `com.finisus`, coerente com o `groupId` Maven e a configuração atual.
+O Finisus usa o pacote-base `com.finisus` e organiza o backend em camadas com dependências voltadas ao núcleo do negócio. Spring, HTTP, JPA e JWT ficam nas bordas; os modelos de domínio não dependem desses frameworks.
 
-O domínio não depende de Spring. Casos de uso dependem de portas e os adapters web e JPA realizam a integração com HTTP, segurança e persistência. O relógio operacional é exposto por `ObterDataAtualPort` e implementado com `Clock` na infraestrutura.
+## Organização do código
 
-Na borda de segurança, um JWT validado é convertido em `UsuarioAutenticado`. A anotação web `@UsuarioAtual` fornece somente o identificador ao controller, mantendo JWT e `SecurityContext` fora dos casos de uso.
+- `domain`: entidades, value objects, enums, exceções e invariantes do negócio.
+- `application`: casos de uso, serviços, paginação e portas de entrada e saída.
+- `adapters.in.web`: controllers REST, DTOs de transporte e obtenção do usuário autenticado.
+- `adapters.out.persistence`: adapters JPA, entidades, repositórios e mapeamentos de persistência.
+- `adapters.out.security`: implementação de criptografia de senha e emissão de tokens.
+- `infrastructure`: configuração Spring, segurança, tratamento de erros, observabilidade, relógio e agendamentos.
 
-`TipoInvestimento` permanece um enum fechado (`RENDA_FIXA`, `RENDA_VARIAVEL`, `FUNDO`, `CRIPTO`, `OUTRO`). A opção `OUTRO` é deliberadamente uma categoria residual estável; uma taxonomia configurável exigirá catálogo persistido, migration e migração de dados em uma evolução própria.
+O fluxo principal é `HTTP → controller → porta de entrada → serviço de aplicação → porta de saída → adapter JPA`. O retorno percorre o caminho inverso por DTOs; entidades JPA não fazem parte do contrato HTTP.
 
-`Item` é um catálogo pessoal independente. `TransacaoItem` representa a ocorrência financeira e mantém a referência ao item juntamente com o snapshot de nome, categoria e valor. Assim, alterar ou inativar um item não reescreve lançamentos anteriores. O compartilhamento aponta para a ocorrência (`transacao_item`) quando o rateio for de apenas um item.
-## Checklist de separação de responsabilidades
+## Domínio e aplicação
 
-- [x] Controllers, input ports e serviços próprios para Banco, Conta, Categoria, Meio de Pagamento e Transação.
-- [x] Consulta de histórico de transação exposta por input port próprio.
-- [x] DTO de transação extraído do antigo controller agrupador; recorrências e cartão não dependem mais de DTO de outro controller.
-- [x] Operações de fatura movidas para `FaturaController` e `FaturaUseCase`, com as rotas anteriores preservadas.
-- [x] Movimento de investimento depende de `RegistrarTransacaoUseCase`, e não do use case financeiro agrupado.
-- [x] Operações de movimento movidas para `MovimentoInvestimentoController` e `MovimentoInvestimentoUseCase`, mantendo as rotas existentes.
-- [x] Definir e implementar refinanciamento e correção de lançamento de parcela, com finalização persistida do financiamento.
-- [x] Separar financiamento e parcela em serviços, portas e adapters de persistência distintos; o financiamento coordena criação, refinanciamento e correção, delegando a manutenção do plano ao caso de uso de parcela.
-- [x] Separar cartão de crédito e fatura em serviços e adapters distintos; `FaturaService` consulta o cartão por seu input port e concentra os processos que envolvem as duas entidades.
-- [x] Separar investimento e movimento em serviços, portas e adapters de persistência distintos; movimentos validam o investimento por seu caso de uso e registram a transação financeira pelo contrato dedicado.
-- [x] Separar configuração, despesa compartilhada e rateio em serviços, portas, adapters e controllers distintos; a criação de despesa coordena o processo multi-entidade.
-- [x] Dividir adapters de persistência que ainda tratam mais de uma entidade quando houver responsabilidades independentes. Transação/histórico e recorrência/geração continuam coesos por ciclo de vida; parcela consulta financiamento somente para materializar a associação JPA.
-- [ ] Substituir o proxy transacional baseado em nomes de métodos por decorators explícitos.
-- [ ] Cobrir os novos boundaries com testes unitários, JPA e REST dedicados.
+Os serviços de aplicação coordenam casos de uso e definem limites transacionais. O domínio concentra validações que não dependem de transporte ou banco, como regras de financiamento, parcelas, rateio, fatura, transação e investimento.
 
-Os processos que alteram mais de uma entidade permanecem transacionais e explícitos; eles não se tornam CRUD de uma entidade vizinha.
+As portas mantêm a aplicação independente de implementação. Por exemplo, um caso de uso depende de um repositório de domínio, enquanto o adapter JPA decide consultas, entidades e mapeamentos. A data operacional é obtida por `ObterDataAtualPort`, implementado na infraestrutura com `Clock`.
+
+Operações que alteram mais de uma entidade são tratadas como processos explícitos. Pagamento de parcela, refinanciamento, criação de despesa compartilhada, fechamento de fatura e estorno de movimento de investimento preservam consistência entre os registros envolvidos.
+
+## Persistência e integridade
+
+O ambiente de execução usa MySQL e Flyway. As migrations versionadas em `src/main/resources/db/migration` são aplicadas na inicialização; alterações de schema devem ser novas migrations, sem reescrever versões já aplicadas.
+
+O modelo mantém histórico quando uma referência pode mudar no futuro. `TransacaoItem`, por exemplo, referencia o catálogo de itens e também armazena snapshots de nome, categoria e valor. Assim, a edição ou inativação do item não reescreve lançamentos existentes.
+
+## API e segurança
+
+Controllers recebem entradas validadas e delegam a regra de negócio aos casos de uso. O tratamento centralizado converte falhas esperadas em `ProblemDetail`, mantendo detalhes internos fora da resposta.
+
+O Spring Security valida JWTs na borda. Depois da validação, o token é convertido em `UsuarioAutenticado`; controllers obtêm apenas o identificador por `@UsuarioAtual`, e os casos de uso recebem esse identificador sem depender de `SecurityContext`. Consulte [Autenticação](autenticacao.md) para o fluxo de tokens.
+
+## Operação
+
+O Actuator expõe health, informações e métricas. A aplicação também possui agendamento para geração mensal de recorrências, configurável por cron e fuso horário. Logs não devem registrar senhas, chaves ou tokens.

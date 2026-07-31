@@ -1,25 +1,58 @@
 # Finisus Backend
 
-API de finanças pessoais em Java 25 e Spring Boot. O pacote-base adotado é `com.finisus`.
+API para gerenciamento de finanças pessoais. O backend concentra cadastro e autenticação de usuários, contas, transações, cartões, faturas, investimentos, financiamentos, recorrências e compartilhamento de despesas.
 
-Os recursos financeiros são expostos por controllers próprios; operações compostas, como refinanciamento, pagamento, cancelamento e estorno, mantêm consistência entre as entidades envolvidas. Itens são cadastrados em um catálogo pessoal e vinculados às linhas de transação, preservando o histórico de cada lançamento. Gastos de cartão são agrupados por fatura, que consulta suas transações e itens sem possuir itens diretamente.
+## Stack
 
-## Desenvolvimento local
+- Java 25 e Spring Boot
+- Maven, Spring Data JPA e Bean Validation
+- MySQL com migrations Flyway
+- Spring Security com JWT RSA
+- OpenAPI/Swagger, Actuator e métricas
+- H2 para a suíte local de testes
 
-Use o perfil `dev` somente com uma configuração local não versionada. Copie `src/main/resources/application-dev.example.properties` para `application-dev.properties`, informe as variáveis de banco e JWT e inicie com o perfil `dev`.
+## Pré-requisitos
 
-## Comandos
+- JDK 25
+- Maven 3.9 ou compatível
+- MySQL para executar o perfil `dev`
+- Um par de chaves RSA para assinar e validar JWTs no ambiente local
+
+## Início rápido
+
+Crie a configuração local a partir do exemplo e informe as variáveis exigidas. O arquivo local não é versionado.
 
 ```powershell
-mvn test
+Copy-Item src/main/resources/application-dev.example.properties src/main/resources/application-dev.properties
+$env:FINISUS_DB_USERNAME = 'seu-usuario'
+$env:FINISUS_DB_PASSWORD = 'sua-senha'
+$env:FINISUS_JWT_PRIVATE_KEY_LOCATION = 'file:C:/caminho/chave-privada.pem'
+$env:FINISUS_JWT_PUBLIC_KEY_LOCATION = 'file:C:/caminho/chave-publica.pem'
+mvn "-Dspring-boot.run.profiles=dev" spring-boot:run
 ```
+
+Com a aplicação em execução, acesse:
+
+- Swagger UI: <http://localhost:8080/api/v1/swagger-ui.html>
+- OpenAPI JSON: <http://localhost:8080/api/v1/docs>
+- Health check: <http://localhost:8080/actuator/health>
+
+## Comandos úteis
+
+```powershell
+mvn clean verify
+mvn "-Dspring-boot.run.profiles=dev" spring-boot:run
+```
+
+## Estrutura do código
+
+O código-fonte usa o pacote-base `com.finisus`. O domínio contém modelos e invariantes; a aplicação define casos de uso e portas; adapters expõem HTTP e persistência; a infraestrutura reúne configuração, segurança, observabilidade, tempo e agendamento.
 
 ## Documentação
 
-- [Swagger UI](http://localhost:8080/api/v1/swagger-ui.html)
 - [Arquitetura](docs/arquitetura.md)
 - [API](docs/api.md)
 - [Autenticação](docs/autenticacao.md)
 - [Desenvolvimento](docs/desenvolvimento.md)
-- [Testes](docs/testes.md)
 - [Regras de negócio](docs/regras-negocio.md)
+- [Testes](docs/testes.md)

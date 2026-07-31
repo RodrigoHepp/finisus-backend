@@ -1,11 +1,17 @@
 # Testes
 
-Execute toda a suíte com:
+Execute a verificação completa com:
 
 ```powershell
-mvn test
+mvn clean verify
 ```
 
-A suíte atual inicializa a aplicação com H2 e executa as migrations Flyway. Testes que exigem MySQL real devem usar Testcontainers e permanecer condicionados à disponibilidade do Docker no ambiente de execução.
+## Cobertura atual
 
-Os testes de segurança também cobrem a conversão do `sub` validado do JWT para `UsuarioAutenticado`, incluindo a preservação de authorities.
+A suíte combina testes de domínio, serviços de aplicação, conversão de segurança, paginação e integração HTTP. Os testes de integração inicializam o contexto Spring, usam H2 em memória e executam as migrations Flyway antes das verificações.
+
+Os cenários cobrem autenticação, publicação do OpenAPI, regras de financiamento e parcelas, rateio, fatura e conversão do `sub` validado do JWT para `UsuarioAutenticado`.
+
+## Banco de dados
+
+H2 dá retorno rápido para a suíte local, mas não substitui a validação contra MySQL. O projeto declara Testcontainers para testes de integração que precisarem verificar comportamento específico do banco; esses testes dependem de Docker disponível no ambiente.

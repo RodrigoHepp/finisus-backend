@@ -1,19 +1,34 @@
 # API
 
-O contrato detalhado está disponível no [Swagger UI](http://localhost:8080/api/v1/swagger-ui.html). A especificação OpenAPI em JSON é publicada em `http://localhost:8080/api/v1/docs`.
+O contrato detalhado é publicado pela própria aplicação:
 
-As rotas, exceto autenticação e documentação, exigem um access token JWT no cabeçalho `Authorization: Bearer <token>`. No Swagger UI, obtenha o token em `POST /api/v1/auth/login` e use o botão **Authorize** para informar somente o access token. As respostas de validação e de regra de negócio usam `ProblemDetail`.
+- Swagger UI: <http://localhost:8080/api/v1/swagger-ui.html>
+- OpenAPI JSON: <http://localhost:8080/api/v1/docs>
 
-As coleções usam paginação por offset com os parâmetros `pagina` (a partir de zero) e `tamanho` (de 1 a 100).
+As rotas usam o prefixo `/api/v1`. O Swagger é a fonte de verdade para payloads, campos obrigatórios, códigos de resposta e todos os endpoints.
 
-Os recursos de banco, conta, categoria, item, meio de pagamento, transação, fatura e movimento de investimento possuem controllers e tags OpenAPI próprios. As rotas existentes foram preservadas; por exemplo, as faturas continuam em `/api/v1/cartoes/{cartaoId}/faturas` e `/api/v1/cartoes/faturas/**`, e os movimentos em `/api/v1/investimentos/**/movimentos`.
+## Autenticação
 
-O catálogo de itens é exposto em `/api/v1/itens`. Novas linhas em transações e gastos de cartão recebem `itemId` e `valor`; nome e categoria são copiados do item para manter o histórico do lançamento. Um item inativo não pode ser usado em novos lançamentos. `POST /api/v1/compartilhamentos` aceita `transacaoItemId` opcional para ratear somente uma ocorrência de item; sem esse campo, rateia a transação inteira.
+As rotas de cadastro, login, renovação de token e documentação são públicas. Os demais recursos exigem o cabeçalho abaixo com um access token válido:
 
-`GET /api/v1/cartoes/faturas/{faturaId}` retorna a fatura, seu total de gastos não estornados e as transações de cartão vinculadas, incluindo os itens e snapshots de cada lançamento. A fatura não possui itens diretamente: o caminho é fatura → transação → item da transação.
+```http
+Authorization: Bearer <access-token>
+```
 
-Parcelas de financiamento oferecem dois fluxos explícitos: `POST /api/v1/financiamentos/{financiamentoId}/parcelas/{parcelaId}/refinanciamento` encerra o financiamento e remove apenas parcelas não pagas a partir da parcela indicada; `DELETE /api/v1/financiamentos/{financiamentoId}/parcelas/{parcelaId}/erro-de-lancamento` remove uma parcela e recalcula o cronograma somente se não houver parcelas pagas.
+Os fluxos de `POST /api/v1/auth/cadastro`, `POST /api/v1/auth/login` e `POST /api/v1/auth/refresh` estão descritos em [Autenticação](autenticacao.md).
 
-`POST /api/v1/recorrencias/geracoes/{anoMes}` aceita somente a competência atual ou passada. Competências futuras são uma previsão e não podem gerar lançamentos nem alterar o saldo da conta.
+## Recursos
 
-Operações de ciclo de vida usam comandos explícitos: `POST /api/v1/compartilhamentos/{id}/cancelar`, `GET /api/v1/compartilhamentos/{id}`, `GET /api/v1/compartilhamentos/rateios/recebidos`, `PATCH /api/v1/cartoes/faturas/{id}`, `POST /api/v1/cartoes/faturas/{id}/cancelar`, `POST /api/v1/financiamentos/{id}/cancelar` e `POST /api/v1/investimentos/movimentos/{id}/estornar`. O criador administra a despesa compartilhada; o participante interno consulta apenas os próprios rateios recebidos. Transições inválidas retornam `422`; conflitos de lock ou versão retornam `409`.
+A API agrupa recursos de organização financeira — bancos, contas, categorias, meios de pagamento e itens — e recursos de operação — transações, recorrências, compras parceladas, cartões, faturas, financiamentos, investimentos, previsões e compartilhamentos.
+
+Algumas operações possuem comandos próprios para tornar a intenção explícita, como fechar ou pagar uma fatura, cancelar uma despesa compartilhada, refinanciar uma parcela e estornar um movimento de investimento. Consulte o Swagger antes de integrar esses fluxos, pois eles podem exigir condições de estado.
+
+## Convenções
+
+Coleções paginadas usam offset com `pagina` iniciando em zero e `tamanho` entre 1 e 100. As respostas não expõem entidades JPA e as entradas são validadas na borda.
+
+Falhas de validação, autenticação, autorização, regra de negócio e concorrência retornam `ProblemDetail`. Em especial, regras de estado inválido retornam `422` e conflitos de versão ou lock retornam `409`.
+
+## Compatibilidade
+
+Clientes devem tratar campos adicionais em respostas como compatíveis e não inferir regras a partir da estrutura interna de persistência. Mudanças incompatíveis de contrato devem ser avaliadas e documentadas antes da publicação.
