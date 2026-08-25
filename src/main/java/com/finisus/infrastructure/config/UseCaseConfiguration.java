@@ -99,6 +99,18 @@ public class UseCaseConfiguration {
 	}
 
 	@Bean
+	ImportacaoFinanceiraService importacaoFinanceiraService(BancoUseCase b, ImportacaoFinanceiraRepositoryPort i,
+			LeitorDocumentoFinanceiroPort l, TransacaoRepositoryPort t, RegistrarTransacaoUseCase r, FaturaUseCase f) {
+		return new ImportacaoFinanceiraService(b, i, l, t, r, f);
+	}
+
+	@Bean
+	@Primary
+	ImportacaoFinanceiraUseCase importacaoFinanceiraUseCase(ImportacaoFinanceiraService s) {
+		return s;
+	}
+
+	@Bean
 	ConfiguracaoCompartilhamentoService configuracaoCompartilhamentoService(
 			ConfiguracaoCompartilhamentoRepositoryPort r) {
 		return new ConfiguracaoCompartilhamentoService(r);

@@ -32,3 +32,11 @@
 ## Dados de usuário
 
 E-mails são normalizados com `Locale.ROOT` antes do uso nas regras de negócio.
+
+## Importação financeira por PDF
+
+- A importação exige um banco selecionado e um PDF legível de até 10 MB. O nome do arquivo não define o tipo do documento.
+- O lote fica pendente de revisão: nenhuma transação ou gasto de fatura é criado durante a leitura.
+- Cada linha preserva o conteúdo extraído. Campos incertos ficam pendentes de confirmação até a revisão do usuário.
+- A confirmação exige conta para extratos e cobranças, ou uma fatura existente para gastos de cartão. Linhas removidas na revisão não são importadas.
+- A prévia informa transações possivelmente duplicadas quando conta ou fatura, data, valor e descrição coincidem com um lançamento já existente.

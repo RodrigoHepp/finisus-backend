@@ -10,7 +10,7 @@ mvn clean verify
 
 A suíte combina testes de domínio, serviços de aplicação, conversão de segurança, paginação e integração HTTP. Os testes de integração inicializam o contexto Spring, usam H2 em memória e executam as migrations Flyway antes das verificações.
 
-Os cenários cobrem autenticação, publicação do OpenAPI, regras de financiamento e parcelas, rateio, fatura e conversão do `sub` validado do JWT para `UsuarioAutenticado`.
+Os cenários cobrem autenticação, publicação do OpenAPI, regras de financiamento e parcelas, rateio, fatura, importação de PDF e conversão do `sub` validado do JWT para `UsuarioAutenticado`.
 
 ## Banco de dados
 

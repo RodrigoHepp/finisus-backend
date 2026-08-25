@@ -23,6 +23,12 @@ A API agrupa recursos de organização financeira — bancos, contas, categorias
 
 Algumas operações possuem comandos próprios para tornar a intenção explícita, como fechar ou pagar uma fatura, cancelar uma despesa compartilhada, refinanciar uma parcela e estornar um movimento de investimento. Consulte o Swagger antes de integrar esses fluxos, pois eles podem exigir condições de estado.
 
+## Importação de PDF
+
+`POST /api/v1/importacoes-financeiras` recebe multipart com `bancoId` e a parte `arquivo`. O PDF é lido sem usar o nome como critério, e a resposta retorna uma prévia de extrato, fatura ou cobrança ainda não registrada. Use `PUT /api/v1/importacoes-financeiras/{id}/revisao` para selecionar a conta ou fatura existente, corrigir/remover linhas e associar categoria ou item. A resposta também apresenta possíveis duplicidades.
+
+Somente `POST /api/v1/importacoes-financeiras/{id}/confirmar` cria lançamentos: extratos e cobranças geram transações na conta selecionada; faturas geram gastos na fatura existente. PDFs inválidos, criptografados ou não reconhecidos retornam `ProblemDetail` com orientação para reenviar um documento legível.
+
 ## Convenções
 
 Coleções paginadas usam offset com `pagina` iniciando em zero e `tamanho` entre 1 e 100. As respostas não expõem entidades JPA e as entradas são validadas na borda.
