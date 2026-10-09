@@ -1,5 +1,7 @@
 package com.finisus.infrastructure.observability;
 
+import com.finisus.application.ports.out.EventoOperacionalPort;
+import com.finisus.domain.ConflitoAtualizacaoException;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.stereotype.Component;
@@ -9,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 @Component
-public class OperacaoFinanceiraMetrics {
+public class OperacaoFinanceiraMetrics implements EventoOperacionalPort {
 	private final MeterRegistry registry;
 	private final ConcurrentHashMap<String, AtomicInteger> emAndamento = new ConcurrentHashMap<>();
 
@@ -26,11 +28,20 @@ public class OperacaoFinanceiraMetrics {
 			registrar(operacao, "sucesso", inicio);
 			return resultado;
 		} catch (RuntimeException exception) {
-			registrar(operacao, "falha", inicio);
+			registrar(operacao, resultadoDaFalha(exception), inicio);
 			throw exception;
 		} finally {
 			concorrencia.decrementAndGet();
 		}
+	}
+
+	public void registrarDivergenciaSaldo() {
+		registrar("divergencia_saldo");
+	}
+
+	@Override
+	public void registrar(String evento) {
+		registry.counter("financeiro.eventos", "evento", evento).increment();
 	}
 
 	public void medir(String operacao, Runnable acao) {
@@ -51,5 +62,9 @@ public class OperacaoFinanceiraMetrics {
 		registry.counter("financeiro.operacoes", "operacao", operacao, "resultado", resultado).increment();
 		inicio.stop(Timer.builder("financeiro.operacoes.duracao").tag("operacao", operacao).tag("resultado", resultado)
 				.register(registry));
+	}
+
+	private String resultadoDaFalha(RuntimeException exception) {
+		return exception instanceof ConflitoAtualizacaoException ? "conflito" : "falha";
 	}
 }
