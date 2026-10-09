@@ -1,4 +1,15 @@
 target/
+/tmp/
+*.log
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
 src/main/resources/application-dev.properties
 .classpath
 .factorypath
