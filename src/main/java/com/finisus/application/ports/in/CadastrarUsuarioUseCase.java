@@ -2,7 +2,7 @@ package com.finisus.application.ports.in;
 
 public interface CadastrarUsuarioUseCase {
 
-	Result executar(Command command);
+	Result executar(Long usuarioSolicitanteId, Command command);
 
 	record Command(String nome, String email, String senha) {
 	}

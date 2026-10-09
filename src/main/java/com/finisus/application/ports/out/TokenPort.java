@@ -1,11 +1,14 @@
 package com.finisus.application.ports.out;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.Optional;
+
+import com.finisus.domain.model.PermissaoUsuario;
 
 public interface TokenPort {
 
-	String gerarAccessToken(Long usuarioId, String email, long sessaoVersao);
+	String gerarAccessToken(Long usuarioId, String email, long sessaoVersao, Set<PermissaoUsuario> permissoes);
 
 	String gerarRefreshToken(Long usuarioId);
 
