@@ -80,7 +80,7 @@ class DivisaoCompartilhadaServiceTest {
 
         var resumo = service.consultarResumo(2L, 10L, LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 31));
 
-        assertThat(resumo.participantes()).allSatisfy(participante ->
+        assertThat(resumo.participantes()).isNotEmpty().allSatisfy(participante ->
                 assertThat(participante.saldo()).isEqualByComparingTo("0.00"));
     }
 
@@ -542,7 +542,8 @@ class DivisaoCompartilhadaServiceTest {
 
         var resumo = service.consultarResumo(1L, 10L, LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 31));
 
-        assertThat(resumo.participantes()).allSatisfy(p -> assertThat(p.saldo()).isEqualByComparingTo("0.00"));
+        assertThat(resumo.participantes()).isNotEmpty()
+                .allSatisfy(p -> assertThat(p.saldo()).isEqualByComparingTo("0.00"));
     }
 
     @Test

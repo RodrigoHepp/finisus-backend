@@ -39,7 +39,7 @@ class PrivacidadeIntegrationTest {
 		assertThat(exportacao.secoes().get("perfil")).singleElement()
 				.satisfies(registro -> assertThat(registro.values()).contains("Titular"));
 		assertThat(exportacao.secoes().values()).allSatisfy(registros -> registros.forEach(registro ->
-				assertThat(registro.keySet()).allSatisfy(chave -> {
+				assertThat(registro.keySet()).isNotEmpty().allSatisfy(chave -> {
 					String normalizada = chave.toLowerCase(Locale.ROOT);
 					assertThat(normalizada).doesNotContain("senha", "token", "hash_idempotencia");
 				})));

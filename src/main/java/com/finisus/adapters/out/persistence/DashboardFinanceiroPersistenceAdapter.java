@@ -26,6 +26,66 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Transactional(readOnly = true)
 public class DashboardFinanceiroPersistenceAdapter implements DashboardFinanceiroRepositoryPort {
+	private static final String FILTROS_BALANCETE = " AND (:tipo IS NULL OR t.tipo = :tipo)"
+			+ " AND (:categoriaId IS NULL OR t.categoria_id = :categoriaId)"
+			+ " AND (:contaId IS NULL OR t.conta_id = :contaId)";
+	private static final String CONDICAO_BALANCETE = " t.usuario_id = :usuarioId AND t.estornado_em IS NULL "
+			+ "AND t.transferencia_id IS NULL AND ((t.fatura_id IS NULL AND t.fatura_pagamento_id IS NULL "
+			+ "AND t.data >= :inicio AND t.data < :fim) OR (t.fatura_id IS NOT NULL AND fg.ano_mes = :anoMes "
+			+ "AND fg.status <> 'CANCELADA') OR (t.fatura_pagamento_id IS NOT NULL AND fp.ano_mes = :anoMes)) ";
+	private static final String CONDICAO_BALANCETE_ANUAL = " t.usuario_id = :usuarioId AND t.estornado_em IS NULL "
+			+ "AND t.transferencia_id IS NULL AND ((t.fatura_id IS NULL AND t.fatura_pagamento_id IS NULL "
+			+ "AND t.data >= :inicio AND t.data < :fim) OR (t.fatura_id IS NOT NULL AND fg.ano_mes >= :mesInicial "
+			+ "AND fg.ano_mes <= :mesFinal AND fg.status <> 'CANCELADA') OR (t.fatura_pagamento_id IS NOT NULL "
+			+ "AND t.data >= :inicio AND t.data < :fim)) ";
+	private static final String EXCLUIR_MOVIMENTOS_INVESTIMENTO = " AND NOT EXISTS (SELECT 1 FROM "
+			+ "movimento_investimento mi WHERE mi.transacao_id = t.id AND mi.estornado_em IS NULL) ";
+	private static final String CONDICAO_COMPETENCIA_MENSAL = " t.usuario_id = :usuarioId AND t.estornado_em IS NULL "
+			+ "AND t.transferencia_id IS NULL AND ((t.fatura_id IS NULL AND t.fatura_pagamento_id IS NULL "
+			+ "AND t.data >= :inicio AND t.data < :fim) OR (t.fatura_id IS NOT NULL AND f.ano_mes = :anoMes "
+			+ "AND f.status <> 'CANCELADA')) " + EXCLUIR_MOVIMENTOS_INVESTIMENTO;
+	private static final String CONDICAO_COMPETENCIA_PERIODO = " t.usuario_id = :usuarioId AND t.estornado_em IS NULL "
+			+ "AND t.transferencia_id IS NULL AND ((t.fatura_id IS NULL AND t.fatura_pagamento_id IS NULL "
+			+ "AND t.data >= :inicio AND t.data < :fim) OR (t.fatura_id IS NOT NULL AND f.ano_mes >= :mesInicial "
+			+ "AND f.ano_mes <= :mesFinal AND f.status <> 'CANCELADA')) " + EXCLUIR_MOVIMENTOS_INVESTIMENTO;
+	private static final String INICIO_SQL_CATEGORIAS = "SELECT valores.categoria_id, "
+			+ "COALESCE(c.nome, 'Sem categoria'), valores.tipo, SUM(valores.valor) FROM (SELECT "
+			+ "COALESCE(i.categoria_id, t.categoria_id) AS categoria_id, t.tipo, i.valor FROM transacao t "
+			+ "LEFT JOIN fatura f ON f.id = t.fatura_id JOIN transacao_item i ON i.transacao_id = t.id WHERE ";
+	private static final String MEIO_SQL_CATEGORIAS = " UNION ALL SELECT t.categoria_id, t.tipo, t.valor "
+			+ "FROM transacao t LEFT JOIN fatura f ON f.id = t.fatura_id WHERE ";
+	private static final String FIM_SQL_CATEGORIAS = " AND NOT EXISTS (SELECT 1 FROM transacao_item i "
+			+ "WHERE i.transacao_id = t.id)) valores LEFT JOIN categoria c ON c.id = valores.categoria_id "
+			+ "GROUP BY valores.categoria_id, c.nome, valores.tipo ORDER BY c.nome, valores.categoria_id";
+	private static final String SQL_CATEGORIAS_MENSAL = INICIO_SQL_CATEGORIAS + CONDICAO_COMPETENCIA_MENSAL
+			+ MEIO_SQL_CATEGORIAS + CONDICAO_COMPETENCIA_MENSAL + FIM_SQL_CATEGORIAS;
+	private static final String SQL_CATEGORIAS_PERIODO = INICIO_SQL_CATEGORIAS + CONDICAO_COMPETENCIA_PERIODO
+			+ MEIO_SQL_CATEGORIAS + CONDICAO_COMPETENCIA_PERIODO + FIM_SQL_CATEGORIAS;
+	private static final String SQL_BALANCETE = "SELECT t.id, t.data, t.descricao, t.tipo, t.valor, t.conta_id, "
+			+ "t.categoria_id, COALESCE(c.nome, 'Sem categoria'), t.fatura_id, t.fatura_pagamento_id FROM transacao t "
+			+ "LEFT JOIN fatura fg ON fg.id = t.fatura_id LEFT JOIN fatura fp ON fp.id = t.fatura_pagamento_id "
+			+ "LEFT JOIN categoria c ON c.id = t.categoria_id WHERE " + CONDICAO_BALANCETE + FILTROS_BALANCETE
+			+ " ORDER BY t.data DESC, t.id DESC";
+	private static final String SQL_BALANCETE_ANUAL = "SELECT t.id, t.data, t.descricao, t.tipo, t.valor, t.conta_id, "
+			+ "t.categoria_id, COALESCE(c.nome, 'Sem categoria'), t.fatura_id, t.fatura_pagamento_id FROM transacao t "
+			+ "LEFT JOIN fatura fg ON fg.id = t.fatura_id LEFT JOIN categoria c ON c.id = t.categoria_id WHERE "
+			+ CONDICAO_BALANCETE_ANUAL + FILTROS_BALANCETE + " ORDER BY t.data DESC, t.id DESC";
+	private static final String SQL_CONTAR_BALANCETE = "SELECT COUNT(t.id) FROM transacao t LEFT JOIN fatura fg "
+			+ "ON fg.id = t.fatura_id LEFT JOIN fatura fp ON fp.id = t.fatura_pagamento_id WHERE "
+			+ CONDICAO_BALANCETE + FILTROS_BALANCETE;
+	private static final String SQL_CONTAR_BALANCETE_ANUAL = "SELECT COUNT(t.id) FROM transacao t LEFT JOIN fatura fg "
+			+ "ON fg.id = t.fatura_id WHERE " + CONDICAO_BALANCETE_ANUAL + FILTROS_BALANCETE;
+	private static final String INICIO_SQL_TOTAIS = "SELECT t.tipo, CASE WHEN EXISTS (SELECT 1 FROM "
+			+ "movimento_investimento mi WHERE mi.transacao_id = t.id AND mi.estornado_em IS NULL) THEN 'INVESTIMENTO' "
+			+ "WHEN t.fatura_id IS NOT NULL THEN 'FATURA' WHEN t.fatura_pagamento_id IS NOT NULL THEN 'PAGAMENTO_FATURA' "
+			+ "WHEN t.compra_parcelada_id IS NOT NULL THEN 'COMPRA_PARCELADA' ELSE 'DIRETA' END, "
+			+ "COALESCE(SUM(t.valor), 0) FROM transacao t LEFT JOIN fatura fg ON fg.id = t.fatura_id ";
+	private static final String SQL_TOTAIS_BALANCETE = INICIO_SQL_TOTAIS
+			+ "LEFT JOIN fatura fp ON fp.id = t.fatura_pagamento_id WHERE " + CONDICAO_BALANCETE
+			+ FILTROS_BALANCETE + " GROUP BY t.tipo, 2";
+	private static final String SQL_TOTAIS_BALANCETE_ANUAL = INICIO_SQL_TOTAIS + "WHERE "
+			+ CONDICAO_BALANCETE_ANUAL + FILTROS_BALANCETE + " GROUP BY t.tipo, 2";
+
 	private final EntityManager entityManager;
 
 	public DashboardFinanceiroPersistenceAdapter(EntityManager entityManager) {
@@ -104,33 +164,25 @@ public class DashboardFinanceiroPersistenceAdapter implements DashboardFinanceir
 
 	@Override
 	public List<ResumoCategoria> consultarCategoriasAnual(Long usuarioId, String ano) {
-		return consultarCategorias(usuarioId, condicaoCompetenciaAnual(), query -> aplicarParametrosAno(query, usuarioId, ano));
+		return consultarCategorias(entityManager.createNativeQuery(SQL_CATEGORIAS_PERIODO),
+				query -> aplicarParametrosAno(query, usuarioId, ano));
 	}
 
 	@Override
 	public List<ResumoCategoria> consultarCategoriasPeriodo(Long usuarioId, String mesInicial, String mesFinal) {
-		return consultarCategorias(usuarioId, condicaoCompetenciaPeriodo(),
+		return consultarCategorias(entityManager.createNativeQuery(SQL_CATEGORIAS_PERIODO),
 				query -> aplicarParametrosPeriodo(query, usuarioId, mesInicial, mesFinal));
 	}
 
 	@Override
 	public Pagina<LinhaBalancete> consultarBalancete(Long usuarioId, ConsultaBalancete consulta, Paginacao paginacao) {
-		String filtros = filtrosBalancete(consulta);
-		Query query = entityManager.createNativeQuery("""
-				SELECT t.id, t.data, t.descricao, t.tipo, t.valor, t.conta_id, t.categoria_id,
-				       COALESCE(c.nome, 'Sem categoria'), t.fatura_id, t.fatura_pagamento_id
-				FROM transacao t
-				LEFT JOIN fatura fg ON fg.id = t.fatura_id
-				LEFT JOIN fatura fp ON fp.id = t.fatura_pagamento_id
-				LEFT JOIN categoria c ON c.id = t.categoria_id
-				WHERE """ + condicaoBalancete() + filtros + " ORDER BY t.data DESC, t.id DESC");
+		Query query = entityManager.createNativeQuery(SQL_BALANCETE);
 		aplicarParametros(query, usuarioId, consulta);
 		query.setFirstResult(paginacao.pagina() * paginacao.tamanho());
 		query.setMaxResults(paginacao.tamanho());
 		@SuppressWarnings("unchecked")
 		List<Object[]> linhas = query.getResultList();
-		Query count = entityManager.createNativeQuery("SELECT COUNT(t.id) FROM transacao t LEFT JOIN fatura fg ON fg.id = t.fatura_id "
-				+ "LEFT JOIN fatura fp ON fp.id = t.fatura_pagamento_id WHERE " + condicaoBalancete() + filtros);
+		Query count = entityManager.createNativeQuery(SQL_CONTAR_BALANCETE);
 		aplicarParametros(count, usuarioId, consulta);
 		long total = numero(count.getSingleResult()).longValue();
 		int totalPaginas = total == 0 ? 0 : (int) Math.ceil((double) total / paginacao.tamanho());
@@ -141,21 +193,13 @@ public class DashboardFinanceiroPersistenceAdapter implements DashboardFinanceir
 	@Override
 	public Pagina<LinhaBalancete> consultarBalanceteAnual(Long usuarioId, ConsultaBalanceteAnual consulta,
 			Paginacao paginacao) {
-		String filtros = filtrosBalancete(consulta);
-		Query query = entityManager.createNativeQuery("""
-				SELECT t.id, t.data, t.descricao, t.tipo, t.valor, t.conta_id, t.categoria_id,
-				       COALESCE(c.nome, 'Sem categoria'), t.fatura_id, t.fatura_pagamento_id
-				FROM transacao t
-				LEFT JOIN fatura fg ON fg.id = t.fatura_id
-				LEFT JOIN categoria c ON c.id = t.categoria_id
-				WHERE """ + condicaoBalanceteAnual() + filtros + " ORDER BY t.data DESC, t.id DESC");
+		Query query = entityManager.createNativeQuery(SQL_BALANCETE_ANUAL);
 		aplicarParametros(query, usuarioId, consulta);
 		query.setFirstResult(paginacao.pagina() * paginacao.tamanho());
 		query.setMaxResults(paginacao.tamanho());
 		@SuppressWarnings("unchecked")
 		List<Object[]> linhas = query.getResultList();
-		Query count = entityManager.createNativeQuery("SELECT COUNT(t.id) FROM transacao t LEFT JOIN fatura fg ON fg.id = t.fatura_id "
-				+ "WHERE " + condicaoBalanceteAnual() + filtros);
+		Query count = entityManager.createNativeQuery(SQL_CONTAR_BALANCETE_ANUAL);
 		aplicarParametros(count, usuarioId, consulta);
 		long total = numero(count.getSingleResult()).longValue();
 		int totalPaginas = total == 0 ? 0 : (int) Math.ceil((double) total / paginacao.tamanho());
@@ -165,39 +209,14 @@ public class DashboardFinanceiroPersistenceAdapter implements DashboardFinanceir
 
 	@Override
 	public Totais consultarTotaisBalancete(Long usuarioId, ConsultaBalancete consulta) {
-		String filtros = filtrosBalancete(consulta);
-		Query query = entityManager.createNativeQuery("""
-				SELECT t.tipo,
-				       CASE WHEN EXISTS (SELECT 1 FROM movimento_investimento mi
-				                                WHERE mi.transacao_id = t.id AND mi.estornado_em IS NULL) THEN 'INVESTIMENTO'
-				            WHEN t.fatura_id IS NOT NULL THEN 'FATURA'
-				            WHEN t.fatura_pagamento_id IS NOT NULL THEN 'PAGAMENTO_FATURA'
-				            WHEN t.compra_parcelada_id IS NOT NULL THEN 'COMPRA_PARCELADA'
-				            ELSE 'DIRETA' END,
-				       COALESCE(SUM(t.valor), 0)
-				FROM transacao t
-				LEFT JOIN fatura fg ON fg.id = t.fatura_id
-				LEFT JOIN fatura fp ON fp.id = t.fatura_pagamento_id
-				WHERE """ + condicaoBalancete() + filtros + " GROUP BY t.tipo, 2");
+		Query query = entityManager.createNativeQuery(SQL_TOTAIS_BALANCETE);
 		aplicarParametros(query, usuarioId, consulta);
 		return totais(query);
 	}
 
 	@Override
 	public Totais consultarTotaisBalanceteAnual(Long usuarioId, ConsultaBalanceteAnual consulta) {
-		String filtros = filtrosBalancete(consulta);
-		Query query = entityManager.createNativeQuery("""
-				SELECT t.tipo,
-				       CASE WHEN EXISTS (SELECT 1 FROM movimento_investimento mi
-				                                WHERE mi.transacao_id = t.id AND mi.estornado_em IS NULL) THEN 'INVESTIMENTO'
-				            WHEN t.fatura_id IS NOT NULL THEN 'FATURA'
-				            WHEN t.fatura_pagamento_id IS NOT NULL THEN 'PAGAMENTO_FATURA'
-				            WHEN t.compra_parcelada_id IS NOT NULL THEN 'COMPRA_PARCELADA'
-				            ELSE 'DIRETA' END,
-				       COALESCE(SUM(t.valor), 0)
-				FROM transacao t
-				LEFT JOIN fatura fg ON fg.id = t.fatura_id
-				WHERE """ + condicaoBalanceteAnual() + filtros + " GROUP BY t.tipo, 2");
+		Query query = entityManager.createNativeQuery(SQL_TOTAIS_BALANCETE_ANUAL);
 		aplicarParametros(query, usuarioId, consulta);
 		return totais(query);
 	}
@@ -228,31 +247,11 @@ public class DashboardFinanceiroPersistenceAdapter implements DashboardFinanceir
 	}
 
 	private List<ResumoCategoria> consultarCategorias(Long usuarioId, String anoMes) {
-		return consultarCategorias(usuarioId, condicaoCompetencia(), query -> aplicarParametrosMes(query, usuarioId, anoMes));
+		return consultarCategorias(entityManager.createNativeQuery(SQL_CATEGORIAS_MENSAL),
+				query -> aplicarParametrosMes(query, usuarioId, anoMes));
 	}
 
-	private List<ResumoCategoria> consultarCategorias(Long usuarioId, String condicaoCompetencia,
-			Consumer<Query> aplicarParametros) {
-		String sql = """
-				SELECT valores.categoria_id, COALESCE(c.nome, 'Sem categoria'), valores.tipo, SUM(valores.valor)
-				FROM (
-					SELECT COALESCE(i.categoria_id, t.categoria_id) AS categoria_id, t.tipo, i.valor
-					FROM transacao t
-					LEFT JOIN fatura f ON f.id = t.fatura_id
-					JOIN transacao_item i ON i.transacao_id = t.id
-					WHERE """ + condicaoCompetencia + """
-					UNION ALL
-					SELECT t.categoria_id, t.tipo, t.valor
-					FROM transacao t
-					LEFT JOIN fatura f ON f.id = t.fatura_id
-					WHERE """ + condicaoCompetencia + " AND NOT EXISTS " + """
-						(SELECT 1 FROM transacao_item i WHERE i.transacao_id = t.id)
-				) valores
-				LEFT JOIN categoria c ON c.id = valores.categoria_id
-				GROUP BY valores.categoria_id, c.nome, valores.tipo
-				ORDER BY c.nome, valores.categoria_id
-				""";
-		Query query = entityManager.createNativeQuery(sql);
+	private List<ResumoCategoria> consultarCategorias(Query query, Consumer<Query> aplicarParametros) {
 		aplicarParametros.accept(query);
 		@SuppressWarnings("unchecked")
 		List<Object[]> linhas = query.getResultList();
@@ -304,75 +303,18 @@ public class DashboardFinanceiroPersistenceAdapter implements DashboardFinanceir
 		return decimal(query.getSingleResult());
 	}
 
-	private String condicaoCompetencia() {
-		return " t.usuario_id = :usuarioId AND t.estornado_em IS NULL AND t.transferencia_id IS NULL AND ((t.fatura_id IS NULL "
-				+ "AND t.fatura_pagamento_id IS NULL AND t.data >= :inicio AND t.data < :fim) "
-				+ "OR (t.fatura_id IS NOT NULL AND f.ano_mes = :anoMes AND f.status <> 'CANCELADA')) "
-				+ excluirMovimentosInvestimento();
-	}
-
-	private String condicaoCompetenciaAnual() {
-		return " t.usuario_id = :usuarioId AND t.estornado_em IS NULL AND t.transferencia_id IS NULL AND ((t.fatura_id IS NULL "
-				+ "AND t.fatura_pagamento_id IS NULL AND t.data >= :inicio AND t.data < :fim) "
-				+ "OR (t.fatura_id IS NOT NULL AND f.ano_mes >= :mesInicial AND f.ano_mes <= :mesFinal "
-				+ "AND f.status <> 'CANCELADA')) " + excluirMovimentosInvestimento();
-	}
-
-	private String condicaoCompetenciaPeriodo() {
-		return " t.usuario_id = :usuarioId AND t.estornado_em IS NULL AND t.transferencia_id IS NULL AND ((t.fatura_id IS NULL AND t.fatura_pagamento_id IS NULL "
-				+ "AND t.data >= :inicio AND t.data < :fim) OR (t.fatura_id IS NOT NULL "
-				+ "AND f.ano_mes >= :mesInicial AND f.ano_mes <= :mesFinal AND f.status <> 'CANCELADA')) "
-				+ excluirMovimentosInvestimento();
-	}
-
-	private String excluirMovimentosInvestimento() {
-		return " AND NOT EXISTS (SELECT 1 FROM movimento_investimento mi WHERE mi.transacao_id = t.id "
-				+ "AND mi.estornado_em IS NULL) ";
-	}
-
-	private String condicaoBalancete() {
-		return " t.usuario_id = :usuarioId AND t.estornado_em IS NULL AND t.transferencia_id IS NULL AND ((t.fatura_id IS NULL "
-				+ "AND t.fatura_pagamento_id IS NULL AND t.data >= :inicio AND t.data < :fim) "
-				+ "OR (t.fatura_id IS NOT NULL AND fg.ano_mes = :anoMes AND fg.status <> 'CANCELADA') "
-				+ "OR (t.fatura_pagamento_id IS NOT NULL AND fp.ano_mes = :anoMes)) ";
-	}
-
-	private String condicaoBalanceteAnual() {
-		return " t.usuario_id = :usuarioId AND t.estornado_em IS NULL AND t.transferencia_id IS NULL AND ((t.fatura_id IS NULL "
-				+ "AND t.fatura_pagamento_id IS NULL AND t.data >= :inicio AND t.data < :fim) "
-				+ "OR (t.fatura_id IS NOT NULL AND fg.ano_mes >= :mesInicial AND fg.ano_mes <= :mesFinal "
-				+ "AND fg.status <> 'CANCELADA') "
-				+ "OR (t.fatura_pagamento_id IS NOT NULL AND t.data >= :inicio AND t.data < :fim)) ";
-	}
-
-	private String filtrosBalancete(ConsultaBalancete consulta) {
-		return filtrosBalancete(consulta.tipo(), consulta.categoriaId(), consulta.contaId());
-	}
-
-	private String filtrosBalancete(ConsultaBalanceteAnual consulta) {
-		return filtrosBalancete(consulta.tipo(), consulta.categoriaId(), consulta.contaId());
-	}
-
-	private String filtrosBalancete(TipoTransacao tipo, Long categoriaId, Long contaId) {
-		StringBuilder filtros = new StringBuilder();
-		if (tipo != null) filtros.append(" AND t.tipo = :tipo");
-		if (categoriaId != null) filtros.append(" AND t.categoria_id = :categoriaId");
-		if (contaId != null) filtros.append(" AND t.conta_id = :contaId");
-		return filtros.toString();
-	}
-
 	private void aplicarParametros(Query query, Long usuarioId, ConsultaBalancete consulta) {
 		aplicarParametrosMes(query, usuarioId, consulta.anoMes());
-		if (consulta.tipo() != null) query.setParameter("tipo", consulta.tipo().name());
-		if (consulta.categoriaId() != null) query.setParameter("categoriaId", consulta.categoriaId());
-		if (consulta.contaId() != null) query.setParameter("contaId", consulta.contaId());
+		query.setParameter("tipo", consulta.tipo() == null ? null : consulta.tipo().name());
+		query.setParameter("categoriaId", consulta.categoriaId());
+		query.setParameter("contaId", consulta.contaId());
 	}
 
 	private void aplicarParametros(Query query, Long usuarioId, ConsultaBalanceteAnual consulta) {
 		aplicarParametrosAno(query, usuarioId, consulta.ano());
-		if (consulta.tipo() != null) query.setParameter("tipo", consulta.tipo().name());
-		if (consulta.categoriaId() != null) query.setParameter("categoriaId", consulta.categoriaId());
-		if (consulta.contaId() != null) query.setParameter("contaId", consulta.contaId());
+		query.setParameter("tipo", consulta.tipo() == null ? null : consulta.tipo().name());
+		query.setParameter("categoriaId", consulta.categoriaId());
+		query.setParameter("contaId", consulta.contaId());
 	}
 
 	private void aplicarParametrosMes(Query query, Long usuarioId, String anoMes) {
