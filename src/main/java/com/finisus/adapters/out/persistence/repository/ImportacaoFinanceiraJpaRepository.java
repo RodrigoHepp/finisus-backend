@@ -9,10 +9,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ImportacaoFinanceiraJpaRepository extends JpaRepository<ImportacaoFinanceiraJpaEntity, Long> {
+	Optional<ImportacaoFinanceiraJpaEntity> findByUsuarioIdAndBancoIdAndHashArquivo(
+			Long usuarioId, Long bancoId, String hashArquivo);
+
 	Optional<ImportacaoFinanceiraJpaEntity> findByIdAndUsuarioId(Long id, Long usuarioId);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("select i from ImportacaoFinanceiraJpaEntity i left join fetch i.lancamentos where i.id = :id and i.usuarioId = :usuarioId")
+	@Query("select i from ImportacaoFinanceiraJpaEntity i left join fetch i.lancamentos "
+			+ "where i.id = :id and i.usuarioId = :usuarioId")
 	Optional<ImportacaoFinanceiraJpaEntity> findByIdAndUsuarioIdForUpdate(@Param("id") Long id,
 			@Param("usuarioId") Long usuarioId);
 }

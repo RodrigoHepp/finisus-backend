@@ -3,6 +3,7 @@ package com.finisus.domain.model;
 import com.finisus.domain.DomainException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,7 @@ public class ImportacaoFinanceira {
 	private final String hashArquivo;
 	private final String leitor;
 	private final TipoDocumentoFinanceiro tipoDocumento;
+	private final TipoDocumentoFinanceiro tipoDocumentoPretendido;
 	private final String identificadorOrigem;
 	private final LocalDate periodoInicio;
 	private final LocalDate periodoFim;
@@ -29,12 +31,14 @@ public class ImportacaoFinanceira {
 	private final List<LancamentoImportado> lancamentos;
 
 	private ImportacaoFinanceira(Long id, Long usuarioId, Long bancoId, String nomeArquivo, String hashArquivo,
-			String leitor, TipoDocumentoFinanceiro tipoDocumento, String identificadorOrigem, LocalDate periodoInicio, LocalDate periodoFim,
+			String leitor, TipoDocumentoFinanceiro tipoDocumento, TipoDocumentoFinanceiro tipoDocumentoPretendido,
+			String identificadorOrigem, LocalDate periodoInicio, LocalDate periodoFim,
 			LocalDate dataVencimento, BigDecimal saldoInicial, BigDecimal saldoFinal, BigDecimal valorTotal,
 			StatusImportacaoFinanceira status, Long contaId, Long faturaId, long version,
 			List<LancamentoImportado> lancamentos) {
 		this.id = id; this.usuarioId = usuarioId; this.bancoId = bancoId; this.nomeArquivo = nomeArquivo;
-		this.hashArquivo = hashArquivo; this.leitor = leitor; this.tipoDocumento = tipoDocumento; this.identificadorOrigem = identificadorOrigem;
+		this.hashArquivo = hashArquivo; this.leitor = leitor; this.tipoDocumento = tipoDocumento;
+		this.tipoDocumentoPretendido = tipoDocumentoPretendido; this.identificadorOrigem = identificadorOrigem;
 		this.periodoInicio = periodoInicio; this.periodoFim = periodoFim; this.dataVencimento = dataVencimento;
 		this.saldoInicial = saldoInicial; this.saldoFinal = saldoFinal; this.valorTotal = valorTotal;
 		this.status = status; this.contaId = contaId; this.faturaId = faturaId; this.version = version;
@@ -45,9 +49,19 @@ public class ImportacaoFinanceira {
 			String leitor, TipoDocumentoFinanceiro tipoDocumento, String identificadorOrigem, LocalDate periodoInicio, LocalDate periodoFim,
 			LocalDate dataVencimento, BigDecimal saldoInicial, BigDecimal saldoFinal, BigDecimal valorTotal,
 			List<LancamentoImportado> lancamentos) {
-		return new ImportacaoFinanceira(null, usuarioId, bancoId, nomeArquivo, hashArquivo, leitor, tipoDocumento, identificadorOrigem,
+		return nova(usuarioId, bancoId, nomeArquivo, hashArquivo, leitor, tipoDocumento, tipoDocumento, identificadorOrigem,
+				periodoInicio, periodoFim, dataVencimento, saldoInicial, saldoFinal, valorTotal, null, null, lancamentos);
+	}
+
+	public static ImportacaoFinanceira nova(Long usuarioId, Long bancoId, String nomeArquivo, String hashArquivo,
+			String leitor, TipoDocumentoFinanceiro tipoDocumento, TipoDocumentoFinanceiro tipoDocumentoPretendido,
+			String identificadorOrigem, LocalDate periodoInicio, LocalDate periodoFim, LocalDate dataVencimento,
+			BigDecimal saldoInicial, BigDecimal saldoFinal, BigDecimal valorTotal, Long contaId, Long faturaId,
+			List<LancamentoImportado> lancamentos) {
+		return new ImportacaoFinanceira(null, usuarioId, bancoId, nomeArquivo, hashArquivo, leitor, tipoDocumento,
+				tipoDocumentoPretendido, identificadorOrigem,
 				periodoInicio, periodoFim, dataVencimento, saldoInicial, saldoFinal, valorTotal,
-				StatusImportacaoFinanceira.PENDENTE_REVISAO, null, null, 0, lancamentos);
+				StatusImportacaoFinanceira.PENDENTE_REVISAO, contaId, faturaId, 0, lancamentos);
 	}
 
 	public static ImportacaoFinanceira reconstituir(Long id, Long usuarioId, Long bancoId, String nomeArquivo,
@@ -55,24 +69,39 @@ public class ImportacaoFinanceira {
 			LocalDate periodoFim, LocalDate dataVencimento, BigDecimal saldoInicial, BigDecimal saldoFinal,
 			BigDecimal valorTotal, StatusImportacaoFinanceira status, Long contaId, Long faturaId, long version,
 			List<LancamentoImportado> lancamentos) {
-		return new ImportacaoFinanceira(id, usuarioId, bancoId, nomeArquivo, hashArquivo, leitor, tipoDocumento, identificadorOrigem,
+		return reconstituir(id, usuarioId, bancoId, nomeArquivo, hashArquivo, leitor, tipoDocumento, tipoDocumento,
+				identificadorOrigem, periodoInicio, periodoFim, dataVencimento, saldoInicial, saldoFinal, valorTotal,
+				status, contaId, faturaId, version, lancamentos);
+	}
+
+	public static ImportacaoFinanceira reconstituir(Long id, Long usuarioId, Long bancoId, String nomeArquivo,
+			String hashArquivo, String leitor, TipoDocumentoFinanceiro tipoDocumento,
+			TipoDocumentoFinanceiro tipoDocumentoPretendido, String identificadorOrigem, LocalDate periodoInicio,
+			LocalDate periodoFim, LocalDate dataVencimento, BigDecimal saldoInicial, BigDecimal saldoFinal,
+			BigDecimal valorTotal, StatusImportacaoFinanceira status, Long contaId, Long faturaId, long version,
+			List<LancamentoImportado> lancamentos) {
+		return new ImportacaoFinanceira(id, usuarioId, bancoId, nomeArquivo, hashArquivo, leitor, tipoDocumento,
+				tipoDocumentoPretendido, identificadorOrigem,
 				periodoInicio, periodoFim, dataVencimento, saldoInicial, saldoFinal, valorTotal, status, contaId,
 				faturaId, version, lancamentos);
 	}
 
-	public void revisar(Long contaId, Long faturaId, List<RevisaoLancamento> revisoes) {
+	public void revisar(Long usuarioId, Long contaId, Long faturaId, List<RevisaoLancamento> revisoes,
+			LocalDateTime revisadoEm) {
 		exigirPendente();
 		this.contaId = contaId;
 		this.faturaId = faturaId;
 		for (RevisaoLancamento revisao : revisoes) {
 			LancamentoImportado lancamento = lancamentos.stream().filter(l -> l.getId().equals(revisao.lancamentoId()))
 					.findFirst().orElseThrow(() -> new DomainException("error.importacao.revisao.invalida"));
-			lancamento.revisar(revisao.data(), revisao.descricao(), revisao.valor(), revisao.tipo(),
-					revisao.importar(), revisao.categoriaId(), revisao.itemId());
+			lancamento.revisar(usuarioId, revisao.data(), revisao.descricao(), revisao.valor(), revisao.tipo(),
+					revisao.importar(), revisao.categoriaId(), revisao.itemId(), revisao.transacaoId(),
+					revisao.obrigacaoFinanceiraId(), revisao.justificativa(), revisadoEm);
 		}
 	}
 
 	public void confirmar() {
+		if (status == StatusImportacaoFinanceira.CONFIRMADA) return;
 		exigirPendente();
 		if (lancamentos.stream().noneMatch(LancamentoImportado::isImportar))
 			throw new DomainException("error.importacao.sem.lancamentos");
@@ -94,10 +123,12 @@ public class ImportacaoFinanceira {
 	}
 
 	public record RevisaoLancamento(Long lancamentoId, LocalDate data, String descricao, BigDecimal valor,
-			TipoTransacao tipo, boolean importar, Long categoriaId, Long itemId) { }
+			TipoTransacao tipo, boolean importar, Long categoriaId, Long itemId, Long transacaoId,
+			Long obrigacaoFinanceiraId, String justificativa) { }
 	public Long getId() { return id; } public Long getUsuarioId() { return usuarioId; } public Long getBancoId() { return bancoId; }
 	public String getNomeArquivo() { return nomeArquivo; } public String getHashArquivo() { return hashArquivo; }
 	public String getLeitor() { return leitor; } public TipoDocumentoFinanceiro getTipoDocumento() { return tipoDocumento; }
+	public TipoDocumentoFinanceiro getTipoDocumentoPretendido() { return tipoDocumentoPretendido; }
 	public String getIdentificadorOrigem() { return identificadorOrigem; }
 	public LocalDate getPeriodoInicio() { return periodoInicio; } public LocalDate getPeriodoFim() { return periodoFim; }
 	public LocalDate getDataVencimento() { return dataVencimento; } public BigDecimal getSaldoInicial() { return saldoInicial; }

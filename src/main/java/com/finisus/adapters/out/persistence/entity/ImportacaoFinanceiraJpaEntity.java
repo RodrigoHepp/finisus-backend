@@ -34,6 +34,8 @@ public class ImportacaoFinanceiraJpaEntity {
 	@Column(name = "hash_arquivo") private String hashArquivo;
 	private String leitor;
 	@Column(name = "tipo_documento") @Enumerated(EnumType.STRING) private TipoDocumentoFinanceiro tipoDocumento;
+	@Column(name = "tipo_documento_pretendido") @Enumerated(EnumType.STRING)
+	private TipoDocumentoFinanceiro tipoDocumentoPretendido;
 	@Column(name = "identificador_origem") private String identificadorOrigem;
 	@Column(name = "periodo_inicio") private LocalDate periodoInicio;
 	@Column(name = "periodo_fim") private LocalDate periodoFim;
