@@ -20,6 +20,6 @@ public interface InvestimentoUseCase {
 
 	Pagina<Investimento> listar(Long usuarioId, Paginacao paginacao);
 
-	record CriarCommand(String nome, TipoInvestimento tipo, Long contaOrigemId) {
+	record CriarCommand(String nome, TipoInvestimento tipo, Long contaOrigemId, Long contaCustodiaId) {
 	}
 }

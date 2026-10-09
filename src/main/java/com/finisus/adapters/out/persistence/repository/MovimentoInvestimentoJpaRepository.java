@@ -12,6 +12,9 @@ public interface MovimentoInvestimentoJpaRepository extends JpaRepository<Movime
 
 	List<MovimentoInvestimentoJpaEntity> findByInvestimentoIdOrderByDataDesc(Long investimentoId);
 
+	List<MovimentoInvestimentoJpaEntity> findByInvestimentoIdInOrderByInvestimentoIdAscDataDescIdDesc(
+			List<Long> investimentosIds);
+
 	Page<MovimentoInvestimentoJpaEntity> findByInvestimentoId(Long investimentoId, Pageable pageable);
 
 	Optional<MovimentoInvestimentoJpaEntity> findByIdAndInvestimentoId(Long id, Long investimentoId);

@@ -7,20 +7,27 @@ public class Investimento {
 	private final String nome;
 	private final TipoInvestimento tipo;
 	private final Long contaOrigemId;
+	private final Long contaCustodiaId;
 	private final boolean ativo;
 
 	private Investimento(Long id, Long usuarioId, String nome, TipoInvestimento tipo, Long contaOrigemId,
-			boolean ativo) {
+			Long contaCustodiaId, boolean ativo) {
 		this.id = id;
 		this.usuarioId = usuarioId;
 		this.nome = nome;
 		this.tipo = tipo;
 		this.contaOrigemId = contaOrigemId;
+		this.contaCustodiaId = contaCustodiaId;
 		this.ativo = ativo;
 	}
 
 	public static Investimento novo(Long usuarioId, String nome, TipoInvestimento tipo, Long contaOrigemId) {
-		return new Investimento(null, usuarioId, nome, tipo, contaOrigemId, true);
+		return novo(usuarioId, nome, tipo, contaOrigemId, null);
+	}
+
+	public static Investimento novo(Long usuarioId, String nome, TipoInvestimento tipo, Long contaOrigemId,
+			Long contaCustodiaId) {
+		return new Investimento(null, usuarioId, nome, tipo, contaOrigemId, contaCustodiaId, true);
 	}
 
 	public static Investimento reconstituir(Long id, Long usuarioId, String nome, TipoInvestimento tipo,
@@ -30,7 +37,12 @@ public class Investimento {
 
 	public static Investimento reconstituir(Long id, Long usuarioId, String nome, TipoInvestimento tipo,
 			Long contaOrigemId, boolean ativo) {
-		return new Investimento(id, usuarioId, nome, tipo, contaOrigemId, ativo);
+		return reconstituir(id, usuarioId, nome, tipo, contaOrigemId, null, ativo);
+	}
+
+	public static Investimento reconstituir(Long id, Long usuarioId, String nome, TipoInvestimento tipo,
+			Long contaOrigemId, Long contaCustodiaId, boolean ativo) {
+		return new Investimento(id, usuarioId, nome, tipo, contaOrigemId, contaCustodiaId, ativo);
 	}
 
 	public Long getId() {
@@ -51,6 +63,10 @@ public class Investimento {
 
 	public Long getContaOrigemId() {
 		return contaOrigemId;
+	}
+
+	public Long getContaCustodiaId() {
+		return contaCustodiaId;
 	}
 
 	public boolean isAtivo() {

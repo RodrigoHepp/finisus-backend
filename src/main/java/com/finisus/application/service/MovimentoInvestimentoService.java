@@ -42,9 +42,10 @@ public class MovimentoInvestimentoService implements MovimentoInvestimentoUseCas
 		if (!investimento.isAtivo()) {
 			throw new DomainException("error.investimento.inativo");
 		}
-		TipoTransacao tipo = command.tipo() == com.finisus.domain.model.TipoMovimentoInvestimento.APORTE
-				? TipoTransacao.SAIDA
-				: TipoTransacao.ENTRADA;
+		TipoTransacao tipo = switch (command.tipo()) {
+			case APORTE, TAXA -> TipoTransacao.SAIDA;
+			case RESGATE, RENDIMENTO_REALIZADO -> TipoTransacao.ENTRADA;
+		};
 		Transacao transacao = transacoes.registrar(usuarioId,
 				new TransacaoUseCase.RegistrarCommand(tipo, command.valor(), command.data(),
 						command.tipo() + " - " + investimento.getNome(), investimento.getContaOrigemId(), null, null,
@@ -72,20 +73,12 @@ public class MovimentoInvestimentoService implements MovimentoInvestimentoUseCas
 	public MovimentoInvestimento estornar(Long usuarioId, Long movimentoId) {
 		MovimentoInvestimento original = movimentos.buscarPorId(movimentoId)
 				.orElseThrow(() -> new DomainException("error.recurso.nao.encontrado"));
-		Investimento investimento = investimentos.buscar(usuarioId, original.getInvestimentoId());
+		investimentos.buscar(usuarioId, original.getInvestimentoId());
 		if (original.getEstornadoEm() != null || movimentos.existeCompensacao(original.getId())) {
 			throw new DomainException("error.movimento.investimento.ja.estornado");
 		}
 		transacoesConsultas.estornar(usuarioId, original.getTransacaoId());
-		TipoTransacao tipoCompensacao = original
-				.getTipo() == com.finisus.domain.model.TipoMovimentoInvestimento.APORTE ? TipoTransacao.ENTRADA
-						: TipoTransacao.SAIDA;
-		Transacao compensacao = transacoes.registrar(usuarioId,
-				new TransacaoUseCase.RegistrarCommand(tipoCompensacao, original.getValor().valor(), original.getData(),
-						"Estorno " + original.getTipo() + " - " + investimento.getNome(),
-						investimento.getContaOrigemId(), null, null, List.of()));
 		java.time.LocalDateTime momento = dataAtual.obterDataHora();
-		movimentos.salvar(original.marcarEstornado(momento));
-		return movimentos.salvar(original.compensar(compensacao.getId(), momento));
+		return movimentos.salvar(original.marcarEstornado(momento));
 	}
 }

@@ -33,5 +33,8 @@ public class InvestimentoJpaEntity {
 	@Column(name = "conta_origem_id")
 	private Long contaOrigemId;
 
+	@Column(name = "conta_custodia_id")
+	private Long contaCustodiaId;
+
 	private boolean ativo;
 }

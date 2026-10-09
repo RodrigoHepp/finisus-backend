@@ -5,12 +5,15 @@ import com.finisus.application.pagination.Paginacao;
 import com.finisus.domain.model.MovimentoInvestimento;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface MovimentoInvestimentoRepositoryPort {
 	MovimentoInvestimento salvar(MovimentoInvestimento movimento);
 
 	List<MovimentoInvestimento> listarPorInvestimento(Long investimentoId);
+
+	Map<Long, List<MovimentoInvestimento>> listarPorInvestimentos(List<Long> investimentosIds);
 
 	Pagina<MovimentoInvestimento> listarPorInvestimento(Long investimentoId, Paginacao paginacao);
 
