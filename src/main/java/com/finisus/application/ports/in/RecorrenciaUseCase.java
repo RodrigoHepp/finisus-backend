@@ -2,7 +2,6 @@ package com.finisus.application.ports.in;
 
 import com.finisus.domain.model.Recorrencia;
 import com.finisus.domain.model.TipoTransacao;
-import com.finisus.domain.model.Transacao;
 import com.finisus.application.pagination.Pagina;
 import com.finisus.application.pagination.Paginacao;
 import java.math.BigDecimal;
