@@ -20,10 +20,13 @@ public class Financiamento {
 	private final LocalDateTime finalizadoEm;
 	private final StatusFinanciamento status;
 	private final LocalDateTime canceladaEm;
+	private final int cronogramaVersao;
+	private final Long financiamentoOrigemId;
 
 	private Financiamento(Long id, Long usuarioId, String descricao, ValorMonetario principal,
 			BigDecimal taxaJurosMensal, int numeroParcelas, LocalDate dataInicio, Long contaId,
-			LocalDateTime finalizadoEm, StatusFinanciamento status, LocalDateTime canceladaEm) {
+			LocalDateTime finalizadoEm, StatusFinanciamento status, LocalDateTime canceladaEm, int cronogramaVersao,
+			Long financiamentoOrigemId) {
 		validar(usuarioId, descricao, principal, taxaJurosMensal, numeroParcelas, dataInicio, contaId);
 		this.id = id;
 		this.usuarioId = usuarioId;
@@ -38,44 +41,78 @@ public class Financiamento {
 				? (finalizadoEm == null ? StatusFinanciamento.ATIVO : StatusFinanciamento.FINALIZADO)
 				: status;
 		this.canceladaEm = canceladaEm;
+		if (cronogramaVersao < 1)
+			throw new FinanciamentoInvalidoException();
+		this.cronogramaVersao = cronogramaVersao;
+		this.financiamentoOrigemId = financiamentoOrigemId;
 	}
 
 	public static Financiamento novo(Long usuarioId, String descricao, ValorMonetario principal,
 			BigDecimal taxaJurosMensal, int numeroParcelas, LocalDate dataInicio, Long contaId) {
 		return new Financiamento(null, usuarioId, descricao, principal, taxaJurosMensal, numeroParcelas, dataInicio,
-				contaId, null, StatusFinanciamento.ATIVO, null);
+				contaId, null, StatusFinanciamento.ATIVO, null, 1, null);
+	}
+
+	public static Financiamento novoRefinanciado(Long usuarioId, String descricao, ValorMonetario principal,
+			BigDecimal taxaJurosMensal, int numeroParcelas, LocalDate dataInicio, Long contaId,
+			Long financiamentoOrigemId) {
+		if (financiamentoOrigemId == null || financiamentoOrigemId <= 0)
+			throw new FinanciamentoInvalidoException();
+		return new Financiamento(null, usuarioId, descricao, principal, taxaJurosMensal, numeroParcelas, dataInicio,
+				contaId, null, StatusFinanciamento.ATIVO, null, 1, financiamentoOrigemId);
 	}
 
 	public static Financiamento reconstituir(Long id, Long usuarioId, String descricao, ValorMonetario principal,
 			BigDecimal taxaJurosMensal, int numeroParcelas, LocalDate dataInicio, Long contaId) {
 		return new Financiamento(id, usuarioId, descricao, principal, taxaJurosMensal, numeroParcelas, dataInicio,
-				contaId, null, StatusFinanciamento.ATIVO, null);
+				contaId, null, StatusFinanciamento.ATIVO, null, 1, null);
 	}
 
 	public static Financiamento reconstituir(Long id, Long usuarioId, String descricao, ValorMonetario principal,
 			BigDecimal taxaJurosMensal, int numeroParcelas, LocalDate dataInicio, Long contaId,
 			LocalDateTime finalizadoEm, StatusFinanciamento status, LocalDateTime canceladaEm) {
+		return reconstituir(id, usuarioId, descricao, principal, taxaJurosMensal, numeroParcelas, dataInicio, contaId,
+				finalizadoEm, status, canceladaEm, 1, null);
+	}
+
+	public static Financiamento reconstituir(Long id, Long usuarioId, String descricao, ValorMonetario principal,
+			BigDecimal taxaJurosMensal, int numeroParcelas, LocalDate dataInicio, Long contaId,
+			LocalDateTime finalizadoEm, StatusFinanciamento status, LocalDateTime canceladaEm, int cronogramaVersao) {
+		return reconstituir(id, usuarioId, descricao, principal, taxaJurosMensal, numeroParcelas, dataInicio, contaId,
+				finalizadoEm, status, canceladaEm, cronogramaVersao, null);
+	}
+
+	public static Financiamento reconstituir(Long id, Long usuarioId, String descricao, ValorMonetario principal,
+			BigDecimal taxaJurosMensal, int numeroParcelas, LocalDate dataInicio, Long contaId,
+			LocalDateTime finalizadoEm, StatusFinanciamento status, LocalDateTime canceladaEm, int cronogramaVersao,
+			Long financiamentoOrigemId) {
 		return new Financiamento(id, usuarioId, descricao, principal, taxaJurosMensal, numeroParcelas, dataInicio,
-				contaId, finalizadoEm, status, canceladaEm);
+				contaId, finalizadoEm, status, canceladaEm, cronogramaVersao, financiamentoOrigemId);
 	}
 
 	public Financiamento finalizar(LocalDateTime dataFinalizacao) {
 		if (finalizadoEm != null)
 			throw new com.finisus.domain.DomainException("error.financiamento.finalizado");
 		return reconstituir(id, usuarioId, descricao, principal, taxaJurosMensal, numeroParcelas, dataInicio, contaId,
-				dataFinalizacao, StatusFinanciamento.FINALIZADO, null);
+				dataFinalizacao, StatusFinanciamento.FINALIZADO, null, cronogramaVersao, financiamentoOrigemId);
 	}
 
 	public Financiamento comNumeroParcelas(int quantidade) {
 		return reconstituir(id, usuarioId, descricao, principal, taxaJurosMensal, quantidade, dataInicio, contaId,
-				finalizadoEm, status, canceladaEm);
+				finalizadoEm, status, canceladaEm, cronogramaVersao, financiamentoOrigemId);
+	}
+
+	public Financiamento comNovoCronograma(int quantidade) {
+		return reconstituir(id, usuarioId, descricao, principal, taxaJurosMensal, quantidade, dataInicio, contaId,
+				finalizadoEm, status, canceladaEm, cronogramaVersao + 1, financiamentoOrigemId);
 	}
 
 	public Financiamento cancelar(LocalDateTime momento) {
 		if (status != StatusFinanciamento.ATIVO)
 			throw new com.finisus.domain.DomainException("error.financiamento.cancelamento.invalido");
 		return new Financiamento(id, usuarioId, descricao, principal, taxaJurosMensal, numeroParcelas, dataInicio,
-				contaId, finalizadoEm, StatusFinanciamento.CANCELADO, momento);
+				contaId, finalizadoEm, StatusFinanciamento.CANCELADO, momento, cronogramaVersao,
+				financiamentoOrigemId);
 	}
 
 	private static void validar(Long usuarioId, String descricao, ValorMonetario principal, BigDecimal taxaJurosMensal,
@@ -134,4 +171,7 @@ public class Financiamento {
 	public LocalDateTime getCanceladaEm() {
 		return canceladaEm;
 	}
+
+	public int getCronogramaVersao() { return cronogramaVersao; }
+	public Long getFinanciamentoOrigemId() { return financiamentoOrigemId; }
 }

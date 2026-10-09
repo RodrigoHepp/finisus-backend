@@ -57,6 +57,12 @@ public class ParcelaFinanciamentoController {
 		return Response.from(parcelas.pagarParcela(usuarioId, financiamentoId, parcelaId, request.dataPagamento()));
 	}
 
+	@PostMapping("/{parcelaId}/estornar-pagamento")
+	Response estornarPagamento(@UsuarioAtual Long usuarioId, @PathVariable @Positive Long financiamentoId,
+			@PathVariable @Positive Long parcelaId) {
+		return Response.from(parcelas.estornarPagamento(usuarioId, financiamentoId, parcelaId));
+	}
+
 	@PostMapping("/{parcelaId}/refinanciamento")
 	RefinanciamentoResponse refinanciar(@UsuarioAtual Long usuarioId, @PathVariable @Positive Long financiamentoId,
 			@PathVariable @Positive Long parcelaId) {
@@ -82,10 +88,18 @@ public class ParcelaFinanciamentoController {
 	record PagamentoRequest(@NotNull LocalDate dataPagamento) {
 	}
 
-	record Response(Long id, int numero, BigDecimal valor, LocalDate vencimento, StatusParcelaFinanciamento status) {
+	record Response(Long id, int numero, BigDecimal valor, BigDecimal principal, BigDecimal juros,
+			BigDecimal encargos, BigDecimal saldoDevedorInicial, BigDecimal saldoDevedorFinal, LocalDate vencimento,
+			StatusParcelaFinanciamento status, Long transacaoId) {
 		static Response from(ParcelaFinanciamento parcela) {
 			return new Response(parcela.getId(), parcela.getNumero(), parcela.getValor().valor(),
-					parcela.getDataVencimento(), parcela.getStatus());
+					valor(parcela.getPrincipal()), valor(parcela.getJuros()), valor(parcela.getEncargos()),
+					valor(parcela.getSaldoDevedorInicial()), valor(parcela.getSaldoDevedorFinal()),
+					parcela.getDataVencimento(), parcela.getStatus(), parcela.getTransacaoId());
+		}
+
+		private static BigDecimal valor(com.finisus.domain.vo.ValorMonetario valor) {
+			return valor == null ? null : valor.valor();
 		}
 	}
 }

@@ -41,9 +41,25 @@ public class ParcelaFinanciamentoJpaEntity {
 
 	private BigDecimal valor;
 
+	@Column(name = "valor_principal")
+	private BigDecimal principal;
+
+	private BigDecimal juros;
+
+	private BigDecimal encargos;
+
+	@Column(name = "saldo_devedor_inicial")
+	private BigDecimal saldoDevedorInicial;
+
+	@Column(name = "saldo_devedor_final")
+	private BigDecimal saldoDevedorFinal;
+
 	@Column(name = "data_vencimento")
 	private LocalDate dataVencimento;
 
 	@Enumerated(EnumType.STRING)
 	private StatusParcelaFinanciamento status;
+
+	@Column(name = "transacao_id")
+	private Long transacaoId;
 }

@@ -36,6 +36,8 @@ public class FinanciamentoPersistenceAdapter implements FinanciamentoRepositoryP
 		entity.setFinalizadoEm(financiamento.getFinalizadoEm());
 		entity.setStatus(financiamento.getStatus());
 		entity.setCanceladaEm(financiamento.getCanceladaEm());
+		entity.setCronogramaVersao(financiamento.getCronogramaVersao());
+		entity.setFinanciamentoOrigemId(financiamento.getFinanciamentoOrigemId());
 		return toDomain(repository.save(entity));
 	}
 
@@ -63,6 +65,6 @@ public class FinanciamentoPersistenceAdapter implements FinanciamentoRepositoryP
 		return Financiamento.reconstituir(entity.getId(), entity.getUsuarioId(), entity.getDescricao(),
 				ValorMonetario.of(entity.getPrincipal()), entity.getTaxaJurosMensal(), entity.getNumeroParcelas(),
 				entity.getDataInicio(), entity.getContaId(), entity.getFinalizadoEm(), entity.getStatus(),
-				entity.getCanceladaEm());
+				entity.getCanceladaEm(), entity.getCronogramaVersao(), entity.getFinanciamentoOrigemId());
 	}
 }

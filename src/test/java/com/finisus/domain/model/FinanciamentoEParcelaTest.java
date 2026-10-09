@@ -42,4 +42,38 @@ class FinanciamentoEParcelaTest {
 		assertThrows(com.finisus.domain.DomainException.class,
 				() -> cancelado.cancelar(LocalDateTime.of(2026, 7, 31, 10, 1)));
 	}
+
+	@Test
+	void estornoDePagamentoReabreParcelaComEstadoTemporalCorreto() {
+		ParcelaFinanciamento paga = ParcelaFinanciamento.reconstituir(1L, 2L, 1,
+				ValorMonetario.of(new BigDecimal("100.00")), LocalDate.of(2026, 9, 10),
+				StatusParcelaFinanciamento.PAGA, 99L);
+
+		ParcelaFinanciamento reaberta = paga.estornarPagamento(LocalDate.of(2026, 9, 23));
+
+		assertEquals(StatusParcelaFinanciamento.ATRASADA, reaberta.getStatus());
+		assertEquals(null, reaberta.getTransacaoId());
+	}
+
+	@Test
+	void rejeitaComposicaoQueNaoFechaComValorESaldoDaParcela() {
+		assertThrows(com.finisus.domain.DomainException.class, () -> ParcelaFinanciamento.nova(1L, 1,
+				ValorMonetario.of(new BigDecimal("110.00")), ValorMonetario.of(new BigDecimal("90.00")),
+				ValorMonetario.of(new BigDecimal("10.00")), ValorMonetario.zero(),
+				ValorMonetario.of(new BigDecimal("100.00")), ValorMonetario.of(new BigDecimal("10.00")),
+				LocalDate.of(2026, 1, 10)));
+	}
+
+	@Test
+	void incrementaVersaoAoSubstituirCronograma() {
+		Financiamento financiamento = Financiamento.reconstituir(1L, 2L, "Veículo",
+				ValorMonetario.of(new BigDecimal("1000.00")), BigDecimal.ZERO, 10,
+				LocalDate.of(2026, 1, 10), 3L);
+
+		Financiamento revisado = financiamento.comNovoCronograma(9);
+
+		assertEquals(1, financiamento.getCronogramaVersao());
+		assertEquals(2, revisado.getCronogramaVersao());
+		assertEquals(9, revisado.getNumeroParcelas());
+	}
 }
