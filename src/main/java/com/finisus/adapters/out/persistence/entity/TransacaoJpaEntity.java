@@ -55,14 +55,18 @@ public class TransacaoJpaEntity {
 	@Column(name = "fatura_id")
 	private Long faturaId;
 
+	@Column(name = "fatura_pagamento_id")
+	private Long faturaPagamentoId;
+
 	@Column(name = "compra_parcelada_id")
 	private Long compraParceladaId;
 
 	@Column(name = "recorrencia_id")
 	private Long recorrenciaId;
 
-	@Column(name = "despesa_compartilhada_id")
-	private Long despesaCompartilhadaId;
+
+	@Column(name = "transferencia_id")
+	private Long transferenciaId;
 
 	@Column(name = "estornado_em")
 	private LocalDateTime estornadoEm;

@@ -4,6 +4,7 @@ import com.finisus.application.pagination.Pagina;
 import com.finisus.application.pagination.Paginacao;
 import com.finisus.domain.model.TipoTransacao;
 import com.finisus.domain.model.Transacao;
+import com.finisus.domain.vo.AnoMes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,7 +19,11 @@ public interface TransacaoUseCase {
 
 	Pagina<Transacao> listar(Long usuarioId, Paginacao paginacao);
 
-	Transacao corrigir(Long usuarioId, Long transacaoId, RegistrarCommand command);
+	Pagina<Transacao> listar(Long usuarioId, Paginacao paginacao, FiltroListagem filtro);
+
+	Transacao corrigir(Long usuarioId, Long transacaoId, CorrigirCommand command);
+
+	Transacao detalhar(Long usuarioId, Long transacaoId, DetalharCommand command);
 
 	Transacao estornar(Long usuarioId, Long transacaoId);
 
@@ -26,6 +31,18 @@ public interface TransacaoUseCase {
 			Long categoriaId, Long meioPagamentoId, List<ItemCommand> itens) {
 	}
 
-	record ItemCommand(Long itemId, BigDecimal valor) {
+	record ItemCommand(Long itemId, String descricao, BigDecimal quantidade, BigDecimal valor, Long categoriaId) {
+		public ItemCommand(Long itemId, BigDecimal valor) {
+			this(itemId, null, null, valor, null);
+		}
+	}
+
+	record CorrigirCommand(RegistrarCommand transacao, String motivo) {
+	}
+
+	record DetalharCommand(List<ItemCommand> itens, String motivo) {
+	}
+
+	record FiltroListagem(AnoMes mes, TipoTransacao tipo, Long categoriaId) {
 	}
 }
