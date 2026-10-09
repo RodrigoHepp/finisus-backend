@@ -48,6 +48,11 @@ public class CategoriaPersistenceAdapter implements CategoriaRepositoryPort {
 	}
 
 	@Override
+	public List<Categoria> listarTodasPorUsuarioParaAtualizacao(Long usuarioId) {
+		return repository.findAllByUsuarioIdForUpdate(usuarioId).stream().map(this::toDomain).toList();
+	}
+
+	@Override
 	public Pagina<Categoria> listarPorUsuario(Long usuarioId, Paginacao paginacao) {
 		return PaginaJpaMapper.map(
 				repository.findByUsuarioIdAndAtivoTrue(usuarioId,

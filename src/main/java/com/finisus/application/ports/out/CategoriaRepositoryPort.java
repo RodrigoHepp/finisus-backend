@@ -17,5 +17,7 @@ public interface CategoriaRepositoryPort {
 
 	List<Categoria> listarPorUsuario(Long usuarioId);
 
+	List<Categoria> listarTodasPorUsuarioParaAtualizacao(Long usuarioId);
+
 	Pagina<Categoria> listarPorUsuario(Long usuarioId, Paginacao paginacao);
 }

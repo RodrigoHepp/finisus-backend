@@ -1,6 +1,5 @@
 package com.finisus.domain.model;
 
-import com.finisus.domain.DomainException;
 
 public class Banco {
 

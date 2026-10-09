@@ -34,7 +34,7 @@ public class BancoService implements BancoUseCase {
 	@Override
 	public Banco buscar(Long usuarioId, Long bancoId) {
 		Banco banco = bancos.buscarPorId(bancoId).orElseThrow(this::notFound);
-		if (banco.isSistema() || !usuarioId.equals(banco.getUsuarioId()))
+		if (!banco.isSistema() && !usuarioId.equals(banco.getUsuarioId()))
 			throw notFound();
 		return banco;
 	}
@@ -42,17 +42,24 @@ public class BancoService implements BancoUseCase {
 	@Override
 	public Banco atualizar(Long usuarioId, Long bancoId, CriarCommand command) {
 		Banco atual = buscar(usuarioId, bancoId);
+		exigirBancoDoUsuario(atual);
 		return bancos.salvar(
-				Banco.reconstituir(atual.getId(), command.nome(), command.codigo(), atual.isAtivo(), usuarioId));
+				Banco.reconstituir(atual.getId(), command.nome(), command.codigo(), atual.isAtivo(), atual.getUsuarioId()));
 	}
 
 	@Override
 	public Banco inativar(Long usuarioId, Long bancoId) {
 		Banco atual = buscar(usuarioId, bancoId);
-		return bancos.salvar(Banco.reconstituir(atual.getId(), atual.getNome(), atual.getCodigo(), false, usuarioId));
+		exigirBancoDoUsuario(atual);
+		return bancos.salvar(
+				Banco.reconstituir(atual.getId(), atual.getNome(), atual.getCodigo(), false, atual.getUsuarioId()));
 	}
 
 	private DomainException notFound() {
 		return new DomainException("error.recurso.nao.encontrado");
+	}
+
+	private void exigirBancoDoUsuario(Banco banco) {
+		if (banco.isSistema()) throw notFound();
 	}
 }

@@ -50,7 +50,8 @@ public class ItemService implements ItemUseCase {
 
 	private void validarCategoria(Long usuarioId, Long categoriaId) {
 		if (categoriaId != null)
-			categorias.buscarPorIdEUsuario(categoriaId, usuarioId).orElseThrow(this::naoEncontrado);
+			CategoriaAtivaValidator.exigirAtiva(
+					categorias.buscarPorIdEUsuario(categoriaId, usuarioId).orElseThrow(this::naoEncontrado));
 	}
 
 	private DomainException naoEncontrado() {
