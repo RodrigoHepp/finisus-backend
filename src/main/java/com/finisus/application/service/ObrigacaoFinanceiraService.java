@@ -92,6 +92,7 @@ public class ObrigacaoFinanceiraService implements ObrigacaoFinanceiraUseCase {
 		return obrigacoes.salvar(obrigacao.registrarPagamento(valorAbatido, command.dataPagamento(), transacao.getId()));
 	}
 
+	@Transactional
 	public ObrigacaoFinanceira pagar(Long usuarioId, Long obrigacaoId, LocalDate dataPagamento,
 			java.math.BigDecimal valor) {
 		return pagar(usuarioId, obrigacaoId, new PagamentoCommand(dataPagamento, valor, null, null, null));

@@ -69,7 +69,7 @@ public class CompraParceladaService implements CompraParceladaUseCase {
 			BigDecimal valor = numero == compra.getNumeroParcelas() ? compra.getValorTotal().valor().subtract(acumulado)
 					: parcelaBase;
 			acumulado = acumulado.add(valor);
-			LocalDate dataParcela = compra.getDataCompra().plusMonths(numero - 1);
+			LocalDate dataParcela = compra.getDataCompra().plusMonths((long) numero - 1);
 			Fatura fatura = cartao == null ? null : obterOuCriarFatura(cartao, compra.getContaId(), dataParcela,
 					usuarioId);
 			if (fatura != null && valorDaFatura(fatura.getId()).add(valor).compareTo(cartao.getLimite().valor()) > 0)

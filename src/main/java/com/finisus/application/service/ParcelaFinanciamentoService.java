@@ -245,7 +245,7 @@ public class ParcelaFinanciamentoService implements ParcelaFinanciamentoUseCase,
 			return java.util.Collections.nCopies(numeroParcelas, valor);
 		}
 		BigDecimal valorBase = principal.divide(BigDecimal.valueOf(numeroParcelas), 2, RoundingMode.DOWN);
-		BigDecimal ultimaParcela = principal.subtract(valorBase.multiply(BigDecimal.valueOf(numeroParcelas - 1)))
+		BigDecimal ultimaParcela = principal.subtract(valorBase.multiply(BigDecimal.valueOf((long) numeroParcelas - 1)))
 				.setScale(2, RoundingMode.UNNECESSARY);
 		return java.util.stream.IntStream.rangeClosed(1, numeroParcelas)
 				.mapToObj(numero -> numero == numeroParcelas ? ultimaParcela : valorBase).toList();
@@ -276,7 +276,7 @@ public class ParcelaFinanciamentoService implements ParcelaFinanciamentoUseCase,
 		return ParcelaFinanciamento.nova(financiamento.getId(), numero, ValorMonetario.of(composicao.valor()),
 				ValorMonetario.of(composicao.principal()), ValorMonetario.of(composicao.juros()),
 				ValorMonetario.of(composicao.encargos()), ValorMonetario.of(composicao.saldoInicial()),
-				ValorMonetario.of(composicao.saldoFinal()), financiamento.getDataInicio().plusMonths(numero - 1));
+				ValorMonetario.of(composicao.saldoFinal()), financiamento.getDataInicio().plusMonths((long) numero - 1));
 	}
 
 	private ParcelaFinanciamento replanejar(ParcelaFinanciamento parcela, int numero, LocalDate vencimento,
