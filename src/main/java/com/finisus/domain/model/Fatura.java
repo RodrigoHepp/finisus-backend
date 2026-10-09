@@ -55,6 +55,13 @@ public class Fatura {
 		this.status = StatusFatura.PAGA;
 	}
 
+	public void estornarPagamento() {
+		if (status != StatusFatura.PAGA) {
+			throw new com.finisus.domain.DomainException("error.fatura.transicao.invalida");
+		}
+		this.status = StatusFatura.FECHADA;
+	}
+
 	public static Fatura reconstituir(Long id, Long cartaoId, AnoMes mesReferencia, LocalDate dataFechamento,
 			LocalDate dataVencimento, StatusFatura status, Long contaPagamentoId, long version) {
 		return reconstituir(id, cartaoId, mesReferencia, dataFechamento, dataVencimento, status, contaPagamentoId,

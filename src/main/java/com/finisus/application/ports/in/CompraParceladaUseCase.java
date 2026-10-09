@@ -19,6 +19,6 @@ public interface CompraParceladaUseCase {
 	CompraParcelada cancelar(Long usuarioId, Long compraId);
 
 	record CriarCommand(String descricao, BigDecimal valorTotal, int numeroParcelas, LocalDate dataCompra,
-			Long categoriaId, Long contaId) {
+			Long categoriaId, Long contaId, Long cartaoId) {
 	}
 }

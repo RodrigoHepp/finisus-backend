@@ -54,7 +54,7 @@ public class CompraParceladaController {
 	@ResponseStatus(HttpStatus.CREATED)
 	Response criar(@UsuarioAtual Long usuarioId, @Valid @RequestBody Request r) {
 		return Response.from(useCase.criar(usuarioId, new CompraParceladaUseCase.CriarCommand(r.descricao(),
-				r.valorTotal(), r.numeroParcelas(), r.dataCompra(), r.categoriaId(), r.contaId())));
+				r.valorTotal(), r.numeroParcelas(), r.dataCompra(), r.categoriaId(), r.contaId(), r.cartaoId())));
 	}
 
 	@GetMapping("/{compraId}")
@@ -69,14 +69,14 @@ public class CompraParceladaController {
 
 	record Request(@NotBlank @Size(max = 300) String descricao, @NotNull @DecimalMin("0.01") BigDecimal valorTotal,
 			@Min(1) int numeroParcelas, @NotNull LocalDate dataCompra, @Positive Long categoriaId,
-			@NotNull @Positive Long contaId) {
+			@NotNull @Positive Long contaId, @Positive Long cartaoId) {
 	}
 
 	record Response(Long id, String descricao, BigDecimal valorTotal, int numeroParcelas, LocalDate dataCompra,
-			Long categoriaId, Long contaId, java.time.LocalDateTime canceladaEm) {
+			Long categoriaId, Long contaId, Long cartaoId, java.time.LocalDateTime canceladaEm) {
 		static Response from(CompraParcelada c) {
 			return new Response(c.getId(), c.getDescricao(), c.getValorTotal().valor(), c.getNumeroParcelas(),
-					c.getDataCompra(), c.getCategoriaId(), c.getContaId(), c.getCanceladaEm());
+					c.getDataCompra(), c.getCategoriaId(), c.getContaId(), c.getCartaoId(), c.getCanceladaEm());
 		}
 	}
 }

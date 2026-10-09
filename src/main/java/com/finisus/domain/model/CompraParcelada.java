@@ -15,10 +15,11 @@ public class CompraParcelada {
 	private final LocalDate dataCompra;
 	private final Long categoriaId;
 	private final Long contaId;
+	private final Long cartaoId;
 	private final LocalDateTime canceladaEm;
 
 	private CompraParcelada(Long id, Long usuarioId, String descricao, ValorMonetario valorTotal, int numeroParcelas,
-			LocalDate dataCompra, Long categoriaId, Long contaId, LocalDateTime canceladaEm) {
+			LocalDate dataCompra, Long categoriaId, Long contaId, Long cartaoId, LocalDateTime canceladaEm) {
 		this.id = id;
 		this.usuarioId = usuarioId;
 		this.descricao = descricao;
@@ -27,32 +28,34 @@ public class CompraParcelada {
 		this.dataCompra = dataCompra;
 		this.categoriaId = categoriaId;
 		this.contaId = contaId;
+		this.cartaoId = cartaoId;
 		this.canceladaEm = canceladaEm;
 	}
 
 	public static CompraParcelada nova(Long usuarioId, String descricao, ValorMonetario valorTotal, int numeroParcelas,
-			LocalDate dataCompra, Long categoriaId, Long contaId) {
+			LocalDate dataCompra, Long categoriaId, Long contaId, Long cartaoId) {
 		return new CompraParcelada(null, usuarioId, descricao, valorTotal, numeroParcelas, dataCompra, categoriaId,
-				contaId, null);
+				contaId, cartaoId, null);
 	}
 
 	public static CompraParcelada reconstituir(Long id, Long usuarioId, String descricao, ValorMonetario valorTotal,
 			int numeroParcelas, LocalDate dataCompra, Long categoriaId, Long contaId) {
 		return reconstituir(id, usuarioId, descricao, valorTotal, numeroParcelas, dataCompra, categoriaId, contaId,
-				null);
+				null, null);
 	}
 
 	public static CompraParcelada reconstituir(Long id, Long usuarioId, String descricao, ValorMonetario valorTotal,
-			int numeroParcelas, LocalDate dataCompra, Long categoriaId, Long contaId, LocalDateTime canceladaEm) {
+			int numeroParcelas, LocalDate dataCompra, Long categoriaId, Long contaId, Long cartaoId,
+			LocalDateTime canceladaEm) {
 		return new CompraParcelada(id, usuarioId, descricao, valorTotal, numeroParcelas, dataCompra, categoriaId,
-				contaId, canceladaEm);
+				contaId, cartaoId, canceladaEm);
 	}
 
 	public CompraParcelada cancelada(LocalDateTime canceladaEm) {
 		if (this.canceladaEm != null)
 			throw new com.finisus.domain.DomainException("error.compra.cancelada");
 		return reconstituir(id, usuarioId, descricao, valorTotal, numeroParcelas, dataCompra, categoriaId, contaId,
-				canceladaEm);
+				cartaoId, canceladaEm);
 	}
 
 	public Long getId() {
@@ -85,6 +88,10 @@ public class CompraParcelada {
 
 	public Long getContaId() {
 		return contaId;
+	}
+
+	public Long getCartaoId() {
+		return cartaoId;
 	}
 
 	public LocalDateTime getCanceladaEm() {

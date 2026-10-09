@@ -2,6 +2,7 @@ package com.finisus.adapters.out.persistence;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import com.finisus.application.pagination.Pagina;
 import com.finisus.application.pagination.Paginacao;
 import com.finisus.application.ports.out.FaturaRepositoryPort;
 import com.finisus.domain.model.Fatura;
+import com.finisus.domain.model.StatusFatura;
 import com.finisus.domain.vo.AnoMes;
 
 @Component
@@ -63,6 +65,17 @@ public class FaturaPersistenceAdapter implements FaturaRepositoryPort {
 				repository.findByCartaoId(id,
 						PaginaJpaMapper.pageable(p, Sort.by("anoMes").descending().and(Sort.by("id").descending()))),
 				this::toDomain);
+	}
+
+	@Override
+	public List<Fatura> listarEmAbertoPorUsuario(Long usuarioId) {
+		return repository.findEmAbertoByUsuarioId(usuarioId, List.of(StatusFatura.ABERTA, StatusFatura.FECHADA))
+				.stream().map(this::toDomain).toList();
+	}
+
+	@Override
+	public List<Fatura> listarAbertasParaFechamento(Long usuarioId, LocalDate dataReferencia) {
+		return repository.findAbertasParaFechamento(usuarioId, dataReferencia).stream().map(this::toDomain).toList();
 	}
 
 	private Fatura toDomain(FaturaJpaEntity e) {

@@ -33,6 +33,7 @@ public class CompraParceladaPersistenceAdapter implements CompraParceladaReposit
 		e.setDataCompra(compra.getDataCompra());
 		e.setCategoriaId(compra.getCategoriaId());
 		e.setContaId(compra.getContaId());
+		e.setCartaoId(compra.getCartaoId());
 		e.setCanceladaEm(compra.getCanceladaEm());
 		return toDomain(repository.save(e));
 	}
@@ -65,6 +66,6 @@ public class CompraParceladaPersistenceAdapter implements CompraParceladaReposit
 	private CompraParcelada toDomain(CompraParceladaJpaEntity e) {
 		return CompraParcelada.reconstituir(e.getId(), e.getUsuarioId(), e.getDescricao(),
 				ValorMonetario.of(e.getValorTotal()), e.getNumeroParcelas(), e.getDataCompra(), e.getCategoriaId(),
-				e.getContaId(), e.getCanceladaEm());
+				e.getContaId(), e.getCartaoId(), e.getCanceladaEm());
 	}
 }
