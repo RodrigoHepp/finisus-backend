@@ -15,4 +15,6 @@ public interface InvestimentoRepositoryPort {
 	List<Investimento> listarPorUsuario(Long usuarioId);
 
 	Pagina<Investimento> listarPorUsuario(Long usuarioId, Paginacao paginacao);
+
+	boolean existePorContaCustodiaExceto(Long contaCustodiaId, Long investimentoId);
 }

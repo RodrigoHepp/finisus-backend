@@ -48,8 +48,12 @@ public class MovimentoInvestimento {
 	public MovimentoInvestimento compensar(Long transacaoCompensacaoId, LocalDateTime momento) {
 		if (id == null)
 			throw new com.finisus.domain.DomainException("error.movimento.investimento.ja.estornado");
-		TipoMovimentoInvestimento oposto = tipo == TipoMovimentoInvestimento.APORTE ? TipoMovimentoInvestimento.RESGATE
-				: TipoMovimentoInvestimento.APORTE;
+		TipoMovimentoInvestimento oposto = switch (tipo) {
+			case APORTE -> TipoMovimentoInvestimento.RESGATE;
+			case RESGATE -> TipoMovimentoInvestimento.APORTE;
+			case RENDIMENTO_REALIZADO, TAXA -> throw new com.finisus.domain.DomainException(
+					"error.movimento.investimento.compensacao.invalida");
+		};
 		return new MovimentoInvestimento(null, investimentoId, oposto, valor, data, transacaoCompensacaoId, id,
 				momento);
 	}

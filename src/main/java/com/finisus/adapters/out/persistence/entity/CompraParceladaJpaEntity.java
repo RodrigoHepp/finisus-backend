@@ -43,6 +43,9 @@ public class CompraParceladaJpaEntity {
 	@Column(name = "conta_id")
 	private Long contaId;
 
+	@Column(name = "cartao_id")
+	private Long cartaoId;
+
 	@Column(name = "cancelada_em")
 	private LocalDateTime canceladaEm;
 }

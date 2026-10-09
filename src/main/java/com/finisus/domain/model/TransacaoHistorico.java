@@ -11,9 +11,14 @@ public class TransacaoHistorico {
 	private final String valorNovo;
 	private final Long alteradoPor;
 	private final LocalDateTime alteradoEm;
+	private final String motivo;
+	private final String correlacaoId;
+	private final String snapshotAnterior;
+	private final String snapshotNovo;
 
 	private TransacaoHistorico(Long id, Long transacaoId, String campoAlterado, String valorAnterior, String valorNovo,
-			Long alteradoPor, LocalDateTime alteradoEm) {
+			Long alteradoPor, LocalDateTime alteradoEm, String motivo, String correlacaoId, String snapshotAnterior,
+			String snapshotNovo) {
 		this.id = id;
 		this.transacaoId = transacaoId;
 		this.campoAlterado = campoAlterado;
@@ -21,18 +26,46 @@ public class TransacaoHistorico {
 		this.valorNovo = valorNovo;
 		this.alteradoPor = alteradoPor;
 		this.alteradoEm = alteradoEm;
+		this.motivo = motivo;
+		this.correlacaoId = correlacaoId;
+		this.snapshotAnterior = snapshotAnterior;
+		this.snapshotNovo = snapshotNovo;
 	}
 
 	public static TransacaoHistorico registrar(Long transacaoId, String campoAlterado, String valorAnterior,
 			String valorNovo, Long alteradoPor, LocalDateTime alteradoEm) {
 		return new TransacaoHistorico(null, transacaoId, campoAlterado, valorAnterior, valorNovo, alteradoPor,
-				alteradoEm);
+				alteradoEm, null, null, null, null);
+	}
+
+	public static TransacaoHistorico registrarCorrecao(Long transacaoId, String valorAnterior, String valorNovo,
+			Long alteradoPor, LocalDateTime alteradoEm, String motivo, String correlacaoId, String snapshotAnterior,
+			String snapshotNovo) {
+		if (motivo == null || motivo.isBlank() || correlacaoId == null || correlacaoId.isBlank())
+			throw new IllegalArgumentException("Motivo e correlação são obrigatórios para correções");
+		return new TransacaoHistorico(null, transacaoId, "CORRECAO", valorAnterior, valorNovo, alteradoPor,
+				alteradoEm, motivo.trim(), correlacaoId, snapshotAnterior, snapshotNovo);
+	}
+
+	public static TransacaoHistorico registrarDetalhamento(Long transacaoId, Long alteradoPor,
+			LocalDateTime alteradoEm, String motivo, String correlacaoId, String snapshotAnterior, String snapshotNovo) {
+		if (motivo == null || motivo.isBlank() || correlacaoId == null || correlacaoId.isBlank())
+			throw new IllegalArgumentException("Motivo e correlação são obrigatórios para detalhamentos");
+		return new TransacaoHistorico(null, transacaoId, "DETALHAMENTO_ITENS", null, null, alteradoPor,
+				alteradoEm, motivo.trim(), correlacaoId, snapshotAnterior, snapshotNovo);
 	}
 
 	public static TransacaoHistorico reconstituir(Long id, Long transacaoId, String campoAlterado, String valorAnterior,
 			String valorNovo, Long alteradoPor, LocalDateTime alteradoEm) {
 		return new TransacaoHistorico(id, transacaoId, campoAlterado, valorAnterior, valorNovo, alteradoPor,
-				alteradoEm);
+				alteradoEm, null, null, null, null);
+	}
+
+	public static TransacaoHistorico reconstituir(Long id, Long transacaoId, String campoAlterado, String valorAnterior,
+			String valorNovo, Long alteradoPor, LocalDateTime alteradoEm, String motivo, String correlacaoId,
+			String snapshotAnterior, String snapshotNovo) {
+		return new TransacaoHistorico(id, transacaoId, campoAlterado, valorAnterior, valorNovo, alteradoPor,
+				alteradoEm, motivo, correlacaoId, snapshotAnterior, snapshotNovo);
 	}
 
 	public Long getId() {
@@ -62,4 +95,12 @@ public class TransacaoHistorico {
 	public LocalDateTime getAlteradoEm() {
 		return alteradoEm;
 	}
+
+	public String getMotivo() { return motivo; }
+
+	public String getCorrelacaoId() { return correlacaoId; }
+
+	public String getSnapshotAnterior() { return snapshotAnterior; }
+
+	public String getSnapshotNovo() { return snapshotNovo; }
 }

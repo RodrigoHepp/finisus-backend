@@ -33,6 +33,8 @@ public class TransacaoItemJpaEntity {
 
 	private String descricao;
 
+	private BigDecimal quantidade;
+
 	private BigDecimal valor;
 
 	@Column(name = "categoria_id")

@@ -13,7 +13,6 @@ import com.finisus.domain.model.*;
 import com.finisus.domain.vo.AnoMes;
 import com.finisus.domain.vo.ValorMonetario;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.*;
 
 public class PrevisaoFluxoCaixaService implements PrevisaoFluxoCaixaUseCase {
@@ -82,7 +81,7 @@ public class PrevisaoFluxoCaixaService implements PrevisaoFluxoCaixaUseCase {
 	}
 
 	private void adicionar(Map<Long, Totais> totais, Long categoriaId, TipoTransacao tipo, BigDecimal valor) {
-		Totais atual = totais.computeIfAbsent(categoriaId, ignored -> new Totais());
+		Totais atual = totais.computeIfAbsent(categoriaId, _ -> new Totais());
 		if (tipo == TipoTransacao.ENTRADA)
 			atual.entrada = atual.entrada.add(valor);
 		else

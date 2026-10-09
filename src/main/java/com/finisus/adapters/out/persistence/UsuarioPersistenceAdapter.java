@@ -1,5 +1,7 @@
 package com.finisus.adapters.out.persistence;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +31,9 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
 		entity.setAtivo(usuario.isAtivo());
 		entity.setCriadoEm(usuario.getCriadoEm());
 		entity.setSessaoVersao(usuario.getSessaoVersao());
+		entity.setTentativasLoginInvalidas(usuario.getTentativasLoginInvalidas());
+		entity.setBloqueado(usuario.isBloqueado());
+		entity.setPermissoes(new HashSet<>(usuario.getPermissoes()));
 		return toDomain(repository.save(entity));
 	}
 
@@ -38,8 +43,23 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
 	}
 
 	@Override
+	public Optional<Usuario> buscarPorIdParaAtualizacao(Long id) {
+		return repository.findByIdForUpdate(id).map(this::toDomain);
+	}
+
+	@Override
+	public List<Usuario> buscarPorIds(Collection<Long> ids) {
+		return repository.findByIdIn(ids).stream().map(this::toDomain).toList();
+	}
+
+	@Override
 	public Optional<Usuario> buscarPorEmail(String email) {
 		return repository.findByEmail(email).map(this::toDomain);
+	}
+
+	@Override
+	public Optional<Usuario> buscarPorEmailParaAtualizacao(String email) {
+		return repository.findByEmailForUpdate(email).map(this::toDomain);
 	}
 
 	@Override
@@ -54,6 +74,7 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
 
 	private Usuario toDomain(UsuarioJpaEntity e) {
 		return Usuario.reconstituir(e.getId(), e.getNome(), new Email(e.getEmail()), e.getSenhaHash(), e.isAtivo(),
-				e.getCriadoEm(), e.getSessaoVersao());
+				e.getCriadoEm(), e.getSessaoVersao(), e.getTentativasLoginInvalidas(), e.isBloqueado(),
+				e.getPermissoes());
 	}
 }

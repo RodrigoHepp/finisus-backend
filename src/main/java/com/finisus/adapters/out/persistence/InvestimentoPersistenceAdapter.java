@@ -29,6 +29,7 @@ public class InvestimentoPersistenceAdapter implements InvestimentoRepositoryPor
 		entity.setNome(investimento.getNome());
 		entity.setTipo(investimento.getTipo());
 		entity.setContaOrigemId(investimento.getContaOrigemId());
+		entity.setContaCustodiaId(investimento.getContaCustodiaId());
 		entity.setAtivo(investimento.isAtivo());
 		return toDomain(repository.save(entity));
 	}
@@ -51,8 +52,14 @@ public class InvestimentoPersistenceAdapter implements InvestimentoRepositoryPor
 				this::toDomain);
 	}
 
+	@Override
+	public boolean existePorContaCustodiaExceto(Long contaCustodiaId, Long investimentoId) {
+		return investimentoId == null ? repository.existsByContaCustodiaId(contaCustodiaId)
+				: repository.existsByContaCustodiaIdAndIdNot(contaCustodiaId, investimentoId);
+	}
+
 	private Investimento toDomain(InvestimentoJpaEntity entity) {
 		return Investimento.reconstituir(entity.getId(), entity.getUsuarioId(), entity.getNome(), entity.getTipo(),
-				entity.getContaOrigemId(), entity.isAtivo());
+				entity.getContaOrigemId(), entity.getContaCustodiaId(), entity.isAtivo());
 	}
 }

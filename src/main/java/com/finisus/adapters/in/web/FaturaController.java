@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -73,8 +74,8 @@ public class FaturaController {
 	TransacaoResponse gasto(@UsuarioAtual Long usuarioId, @PathVariable @Positive Long faturaId,
 			@Valid @RequestBody GastoRequest request) {
 		List<TransacaoUseCase.ItemCommand> itens = request.itens() == null ? List.of()
-				: request.itens().stream().map(item -> new TransacaoUseCase.ItemCommand(item.itemId(), item.valor()))
-						.toList();
+				: request.itens().stream().map(item -> new TransacaoUseCase.ItemCommand(item.itemId(), item.descricao(),
+						item.quantidade(), item.valor(), item.categoriaId())).toList();
 		return TransacaoResponse
 				.from(useCase.lancarGasto(usuarioId, new FaturaUseCase.LancarGastoCommand(faturaId, request.valor(),
 						request.data(), request.descricao(), request.contaId(), request.categoriaId(), itens)));
@@ -85,10 +86,22 @@ public class FaturaController {
 		return Response.from(useCase.fechar(usuarioId, faturaId));
 	}
 
+	@PostMapping("/cartoes/faturas/processar-ciclos")
+	CicloResponse processarCiclos(@UsuarioAtual Long usuarioId, @Valid @RequestBody CicloRequest request) {
+		return CicloResponse.from(useCase.processarCiclos(usuarioId, request.dataReferencia()));
+	}
+
 	@PostMapping("/cartoes/faturas/{faturaId}/pagar")
 	Response pagar(@UsuarioAtual Long usuarioId, @PathVariable @Positive Long faturaId,
+			@RequestHeader("Idempotency-Key") @NotBlank @Size(max = 100) String chaveIdempotencia,
 			@Valid @RequestBody PagamentoRequest request) {
-		return Response.from(useCase.pagar(usuarioId, faturaId, request.dataPagamento()));
+		return Response.from(useCase.pagar(usuarioId, faturaId, chaveIdempotencia,
+				new FaturaUseCase.PagamentoCommand(request.valor(), request.dataPagamento(), request.contaId())));
+	}
+
+	@PostMapping("/cartoes/faturas/{faturaId}/estornar-pagamento")
+	Response estornarPagamento(@UsuarioAtual Long usuarioId, @PathVariable @Positive Long faturaId) {
+		return Response.from(useCase.estornarPagamento(usuarioId, faturaId));
 	}
 
 	@PatchMapping("/cartoes/faturas/{faturaId}")
@@ -113,10 +126,16 @@ public class FaturaController {
 			List<@Valid ItemRequest> itens) {
 	}
 
-	record ItemRequest(@NotNull @Positive Long itemId, @NotNull @DecimalMin("0.01") BigDecimal valor) {
+	record ItemRequest(@Positive Long itemId, @Size(max = 300) String descricao,
+			@DecimalMin(value = "0.000001") BigDecimal quantidade,
+			@NotNull @DecimalMin("0.01") BigDecimal valor, @Positive Long categoriaId) {
 	}
 
-	record PagamentoRequest(@NotNull LocalDate dataPagamento) {
+	record PagamentoRequest(@DecimalMin("0.01") BigDecimal valor, @NotNull LocalDate dataPagamento,
+			@Positive Long contaId) {
+	}
+
+	record CicloRequest(@NotNull LocalDate dataReferencia) {
 	}
 
 	record AtualizarRequest(@NotNull LocalDate dataFechamento, @NotNull LocalDate dataVencimento,
@@ -133,13 +152,23 @@ public class FaturaController {
 	}
 
 	record DetalheResponse(Long id, Long cartaoId, String anoMes, LocalDate fechamento, LocalDate vencimento,
-			StatusFatura status, Long contaPagamentoId, BigDecimal valorTotal, List<TransacaoResponse> transacoes) {
+			StatusFatura status, Long contaPagamentoId, BigDecimal valorTotal, BigDecimal valorPago,
+			BigDecimal creditoAplicado, BigDecimal valorEmAberto, BigDecimal credito,
+			List<TransacaoResponse> transacoes) {
 		static DetalheResponse from(FaturaUseCase.Detalhe detalhe) {
 			Fatura fatura = detalhe.fatura();
 			return new DetalheResponse(fatura.getId(), fatura.getCartaoId(), fatura.getMesReferencia().formatado(),
 					fatura.getDataFechamento(), fatura.getDataVencimento(), fatura.getStatus(),
-					fatura.getContaPagamentoId(), detalhe.valorTotal(),
+					fatura.getContaPagamentoId(), detalhe.valorTotal(), detalhe.valorPago(), detalhe.creditoAplicado(),
+					detalhe.valorEmAberto(), detalhe.credito(),
 					detalhe.transacoes().stream().map(TransacaoResponse::from).toList());
+		}
+	}
+
+	record CicloResponse(List<Response> fechadas, List<Response> criadas) {
+		static CicloResponse from(FaturaUseCase.ResultadoProcessamentoCiclo resultado) {
+			return new CicloResponse(resultado.fechadas().stream().map(Response::from).toList(),
+					resultado.criadas().stream().map(Response::from).toList());
 		}
 	}
 }

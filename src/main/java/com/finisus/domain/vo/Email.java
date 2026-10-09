@@ -2,8 +2,6 @@ package com.finisus.domain.vo;
 
 import com.finisus.domain.DomainException;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Locale;
 import java.util.regex.Pattern;
 

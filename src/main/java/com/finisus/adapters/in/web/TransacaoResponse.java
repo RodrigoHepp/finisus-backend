@@ -16,9 +16,11 @@ public record TransacaoResponse(Long id, TipoTransacao tipo, BigDecimal valor, L
 				transacao.getMeioPagamentoId(), transacao.getItens().stream().map(ItemResponse::from).toList());
 	}
 
-	public record ItemResponse(Long id, Long itemId, String descricao, BigDecimal valor, Long categoriaId) {
+	public record ItemResponse(Long id, Long itemId, String descricao, BigDecimal quantidade, BigDecimal valor,
+			Long categoriaId) {
 		static ItemResponse from(TransacaoItem item) {
-			return new ItemResponse(item.getId(), item.getItemId(), item.getDescricao(), item.getValor().valor(),
+			return new ItemResponse(item.getId(), item.getItemId(), item.getDescricao(), item.getQuantidade(),
+					item.getValor().valor(),
 					item.getCategoriaId());
 		}
 	}

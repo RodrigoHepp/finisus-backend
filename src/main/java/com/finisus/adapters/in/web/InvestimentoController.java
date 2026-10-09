@@ -53,7 +53,8 @@ public class InvestimentoController {
 	@ResponseStatus(HttpStatus.CREATED)
 	Response criar(@UsuarioAtual Long usuarioId, @Valid @RequestBody Request request) {
 		return Response.from(useCase.criar(usuarioId,
-				new InvestimentoUseCase.CriarCommand(request.nome(), request.tipo(), request.contaOrigemId())));
+				new InvestimentoUseCase.CriarCommand(request.nome(), request.tipo(), request.contaOrigemId(),
+						request.contaCustodiaId())));
 	}
 
 	@GetMapping("/{investimentoId}")
@@ -65,7 +66,8 @@ public class InvestimentoController {
 	Response atualizar(@UsuarioAtual Long usuarioId, @PathVariable @Positive Long investimentoId,
 			@Valid @RequestBody Request request) {
 		return Response.from(useCase.atualizar(usuarioId, investimentoId,
-				new InvestimentoUseCase.CriarCommand(request.nome(), request.tipo(), request.contaOrigemId())));
+				new InvestimentoUseCase.CriarCommand(request.nome(), request.tipo(), request.contaOrigemId(),
+						request.contaCustodiaId())));
 	}
 
 	@DeleteMapping("/{investimentoId}")
@@ -75,13 +77,14 @@ public class InvestimentoController {
 	}
 
 	record Request(@NotBlank @Size(max = 150) String nome, @NotNull TipoInvestimento tipo,
-			@NotNull @Positive Long contaOrigemId) {
+			@NotNull @Positive Long contaOrigemId, @Positive Long contaCustodiaId) {
 	}
 
-	record Response(Long id, String nome, TipoInvestimento tipo, Long contaOrigemId, boolean ativo) {
+	record Response(Long id, String nome, TipoInvestimento tipo, Long contaOrigemId, Long contaCustodiaId,
+			boolean ativo) {
 		static Response from(Investimento investimento) {
 			return new Response(investimento.getId(), investimento.getNome(), investimento.getTipo(),
-					investimento.getContaOrigemId(), investimento.isAtivo());
+					investimento.getContaOrigemId(), investimento.getContaCustodiaId(), investimento.isAtivo());
 		}
 	}
 }

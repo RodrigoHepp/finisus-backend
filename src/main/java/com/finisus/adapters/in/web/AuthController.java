@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.finisus.application.ports.in.AutenticarUsuarioUseCase;
 import com.finisus.application.ports.in.CadastrarUsuarioUseCase;
 import com.finisus.application.ports.in.RenovarTokenUseCase;
+import com.finisus.adapters.in.web.security.UsuarioAtual;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -38,9 +39,10 @@ public class AuthController {
 
 	@PostMapping("/cadastro")
 	@ResponseStatus(HttpStatus.CREATED)
-	UsuarioResponse cadastrar(@Valid @RequestBody CadastroRequest request) {
+	UsuarioResponse cadastrar(@UsuarioAtual Long usuarioSolicitanteId, @Valid @RequestBody CadastroRequest request) {
 		var result = cadastrar
-				.executar(new CadastrarUsuarioUseCase.Command(request.nome(), request.email(), request.senha()));
+				.executar(usuarioSolicitanteId,
+						new CadastrarUsuarioUseCase.Command(request.nome(), request.email(), request.senha()));
 		return new UsuarioResponse(result.id(), result.nome(), result.email());
 	}
 

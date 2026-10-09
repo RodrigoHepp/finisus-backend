@@ -35,7 +35,8 @@ public class RecorrenciaService implements RecorrenciaUseCase {
 	public Recorrencia criar(Long usuarioId, CriarCommand command) {
 		ContaAtivaValidator.exigirAtiva(require(contas.buscarPorIdEUsuario(command.contaId(), usuarioId)));
 		if (command.categoriaId() != null)
-			require(categorias.buscarPorIdEUsuario(command.categoriaId(), usuarioId));
+			CategoriaAtivaValidator.exigirAtiva(
+					require(categorias.buscarPorIdEUsuario(command.categoriaId(), usuarioId)));
 		if (command.meioPagamentoId() != null)
 			require(meios.buscarPorIdEUsuario(command.meioPagamentoId(), usuarioId));
 		if (command.diaDoMes() < 1 || command.diaDoMes() > 31)
@@ -73,13 +74,13 @@ public class RecorrenciaService implements RecorrenciaUseCase {
 	}
 
 	@Transactional
-	public List<Transacao> gerarMes(Long usuarioId, String anoMes) {
+	public List<OcorrenciaRecorrencia> gerarMes(Long usuarioId, String anoMes) {
 		AnoMes periodo = AnoMes.parse(anoMes);
 		AnoMes mesAtual = AnoMes.from(dataAtual.obter());
 		if (periodo.primeiroDia().isAfter(mesAtual.primeiroDia())) {
 			throw new DomainException("error.recorrencia.periodo.futuro");
 		}
-		List<Transacao> geradas = new ArrayList<>();
+		List<OcorrenciaRecorrencia> geradas = new ArrayList<>();
 		for (Recorrencia recorrencia : recorrencias.listarAtivasPorUsuario(usuarioId)) {
 			if (recorrencias.existsGeracaoPorRecorrenciaEAnoMes(recorrencia.getId(), periodo))
 				continue;
@@ -88,20 +89,34 @@ public class RecorrenciaService implements RecorrenciaUseCase {
 			Conta conta = require(contas.buscarPorIdEUsuario(recorrencia.getContaId(), usuarioId));
 			if (!conta.isAtivo())
 				continue;
-			Transacao transacao = transacoes.salvar(Transacao.geradaPorRecorrencia(usuarioId, recorrencia.getTipo(),
-					recorrencia.getValorEsperado(), data, recorrencia.getNome(), recorrencia.getContaId(),
-					recorrencia.getCategoriaId(), recorrencia.getMeioPagamentoId(), recorrencia.getId()));
-			ValorMonetario saldo = recorrencia.getTipo() == TipoTransacao.ENTRADA
-					? conta.getSaldo().somar(transacao.getValor())
-					: conta.getSaldo().subtrair(transacao.getValor());
-			contas.salvar(Conta.reconstituir(conta.getId(), conta.getUsuarioId(), conta.getNome(), conta.getTipo(),
-					conta.getBancoId(), saldo, conta.getVersion()));
-			recorrencias.registrarGeracao(recorrencia.getId(), periodo, transacao.getId());
-			transacoes.salvarHistorico(TransacaoHistorico.registrar(transacao.getId(), "GERACAO_RECORRENCIA", null,
-					transacao.getValor().valor().toPlainString(), usuarioId, dataAtual.obterDataHora()));
-			geradas.add(transacao);
+			geradas.add(recorrencias.salvarOcorrencia(OcorrenciaRecorrencia.pendente(recorrencia,
+					periodo.formatado(), data)));
 		}
 		return geradas;
+	}
+
+	public List<OcorrenciaRecorrencia> listarOcorrencias(Long usuarioId, String anoMes) {
+		return recorrencias.listarOcorrencias(usuarioId, AnoMes.parse(anoMes));
+	}
+
+	@Transactional
+	public OcorrenciaRecorrencia realizar(Long usuarioId, Long ocorrenciaId) {
+		OcorrenciaRecorrencia ocorrencia = require(
+				recorrencias.buscarOcorrenciaParaAtualizacao(ocorrenciaId, usuarioId));
+		if (ocorrencia.status() != StatusOcorrenciaRecorrencia.PENDENTE)
+			throw new DomainException("error.recorrencia.ocorrencia.ja.realizada");
+		Conta conta = require(contas.buscarPorIdEUsuario(ocorrencia.contaId(), usuarioId));
+		ContaAtivaValidator.exigirAtiva(conta);
+		Transacao transacao = transacoes.salvar(Transacao.geradaPorRecorrencia(usuarioId, ocorrencia.tipo(),
+				ocorrencia.valor(), dataAtual.obter(), ocorrencia.descricao(), ocorrencia.contaId(),
+				ocorrencia.categoriaId(), ocorrencia.meioPagamentoId(), ocorrencia.recorrenciaId()));
+		ValorMonetario saldo = ocorrencia.tipo() == TipoTransacao.ENTRADA
+				? conta.getSaldo().somar(ocorrencia.valor()) : conta.getSaldo().subtrair(ocorrencia.valor());
+		contas.salvar(Conta.reconstituir(conta.getId(), conta.getUsuarioId(), conta.getNome(), conta.getTipo(),
+				conta.getBancoId(), saldo, conta.getVersion()));
+		transacoes.salvarHistorico(TransacaoHistorico.registrar(transacao.getId(), "BAIXA_RECORRENCIA", null,
+				transacao.getValor().valor().toPlainString(), usuarioId, dataAtual.obterDataHora()));
+		return recorrencias.salvarOcorrencia(ocorrencia.realizada(transacao.getId()));
 	}
 
 	private <T> T require(java.util.Optional<T> value) {
@@ -111,7 +126,8 @@ public class RecorrenciaService implements RecorrenciaUseCase {
 	private void validar(Long usuarioId, CriarCommand command) {
 		ContaAtivaValidator.exigirAtiva(require(contas.buscarPorIdEUsuario(command.contaId(), usuarioId)));
 		if (command.categoriaId() != null)
-			require(categorias.buscarPorIdEUsuario(command.categoriaId(), usuarioId));
+			CategoriaAtivaValidator.exigirAtiva(
+					require(categorias.buscarPorIdEUsuario(command.categoriaId(), usuarioId)));
 		if (command.meioPagamentoId() != null)
 			require(meios.buscarPorIdEUsuario(command.meioPagamentoId(), usuarioId));
 		if (command.diaDoMes() < 1 || command.diaDoMes() > 31)

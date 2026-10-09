@@ -33,7 +33,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 @RestController
 @RequestMapping("/api/v1")
 @Validated
-@Tag(name = "Movimentos de investimento", description = "Aportes e resgates de investimentos.")
+@Tag(name = "Movimentos de investimento", description = "Aportes, resgates, rendimentos realizados e taxas observadas.")
 @SecurityRequirement(name = "bearerAuth")
 public class MovimentoInvestimentoController {
 	private final MovimentoInvestimentoUseCase useCase;

@@ -2,6 +2,7 @@ package com.finisus.application.service;
 
 import com.finisus.application.ports.in.AutenticarUsuarioUseCase;
 import com.finisus.application.ports.in.CadastrarUsuarioUseCase;
+import com.finisus.application.ports.in.GerenciarAcessoUsuarioUseCase;
 import com.finisus.application.ports.in.RenovarTokenUseCase;
 import com.finisus.application.ports.out.PasswordEncoderPort;
 import com.finisus.application.ports.out.RefreshTokenRepositoryPort;
@@ -9,10 +10,16 @@ import com.finisus.application.ports.out.TokenPort;
 import com.finisus.application.ports.out.UsuarioRepositoryPort;
 import com.finisus.application.ports.out.ObterDataAtualPort;
 import com.finisus.domain.DomainException;
+import com.finisus.domain.AcessoNegadoException;
+import com.finisus.domain.CredenciaisInvalidasException;
+import com.finisus.domain.RecursoNaoEncontradoException;
+import com.finisus.domain.model.PermissaoUsuario;
 import com.finisus.domain.model.Usuario;
 import com.finisus.domain.vo.Email;
+import org.springframework.transaction.annotation.Transactional;
 
-public class AutenticacaoService implements CadastrarUsuarioUseCase, AutenticarUsuarioUseCase, RenovarTokenUseCase {
+public class AutenticacaoService implements CadastrarUsuarioUseCase, AutenticarUsuarioUseCase, RenovarTokenUseCase,
+		GerenciarAcessoUsuarioUseCase {
 
 	private final UsuarioRepositoryPort usuarioRepository;
 	private final PasswordEncoderPort passwordEncoder;
@@ -30,7 +37,9 @@ public class AutenticacaoService implements CadastrarUsuarioUseCase, AutenticarU
 	}
 
 	@Override
-	public CadastrarUsuarioUseCase.Result executar(CadastrarUsuarioUseCase.Command command) {
+	@Transactional
+	public CadastrarUsuarioUseCase.Result executar(Long usuarioSolicitanteId, CadastrarUsuarioUseCase.Command command) {
+		exigirPermissao(usuarioSolicitanteId, PermissaoUsuario.USUARIO_CADASTRAR);
 		Email email = new Email(command.email());
 		if (usuarioRepository.existePorEmail(email.valor())) {
 			throw new DomainException("error.usuario.email.existe");
@@ -42,29 +51,48 @@ public class AutenticacaoService implements CadastrarUsuarioUseCase, AutenticarU
 	}
 
 	@Override
+	@Transactional(noRollbackFor = CredenciaisInvalidasException.class)
 	public AutenticarUsuarioUseCase.Result executar(AutenticarUsuarioUseCase.Command command) {
 		Email email = new Email(command.email());
-		Usuario usuario = usuarioRepository.buscarPorEmail(email.valor())
-				.orElseThrow(() -> new DomainException("error.auth.invalid"));
+		Usuario usuario = usuarioRepository.buscarPorEmailParaAtualizacao(email.valor())
+				.orElseThrow(CredenciaisInvalidasException::new);
 		if (!usuario.isAtivo()) {
-			throw new DomainException("error.usuario.inativo");
+			throw new CredenciaisInvalidasException();
+		}
+		if (usuario.isBloqueado()) {
+			throw new CredenciaisInvalidasException();
 		}
 		if (!passwordEncoder.matches(command.senha(), usuario.getSenhaHash())) {
-			throw new DomainException("error.auth.invalid");
+			Usuario atualizado = usuario.registrarFalhaLogin();
+			usuarioRepository.salvar(atualizado);
+			if (atualizado.isBloqueado()) {
+				refreshTokenRepository.invalidarTodosDoUsuario(atualizado.getId());
+				throw new CredenciaisInvalidasException();
+			}
+			throw new CredenciaisInvalidasException();
 		}
-		return emitirTokens(usuario);
+		Usuario atualizado = usuario.registrarLoginBemSucedido();
+		if (atualizado != usuario) {
+			atualizado = usuarioRepository.salvar(atualizado);
+		}
+		return emitirTokens(atualizado);
 	}
 
 	@Override
+	@Transactional(noRollbackFor = CredenciaisInvalidasException.class)
 	public RenovarTokenUseCase.Result executar(RenovarTokenUseCase.Command command) {
 		Long usuarioId = refreshTokenRepository.buscarUsuarioIdPorToken(command.refreshToken())
-				.orElseThrow(() -> new DomainException("error.auth.refresh.invalid"));
+				.orElseThrow(CredenciaisInvalidasException::new);
 		refreshTokenRepository.invalidar(command.refreshToken());
 		Usuario usuario = usuarioRepository.buscarPorId(usuarioId)
-				.orElseThrow(() -> new DomainException("error.auth.invalid"));
+				.orElseThrow(CredenciaisInvalidasException::new);
 		if (!usuario.isAtivo()) {
 			refreshTokenRepository.invalidarTodosDoUsuario(usuarioId);
-			throw new DomainException("error.usuario.inativo");
+			throw new CredenciaisInvalidasException();
+		}
+		if (usuario.isBloqueado()) {
+			refreshTokenRepository.invalidarTodosDoUsuario(usuarioId);
+			throw new CredenciaisInvalidasException();
 		}
 		AutenticarUsuarioUseCase.Result tokens = emitirTokens(usuario);
 		return new RenovarTokenUseCase.Result(tokens.accessToken(), tokens.refreshToken(),
@@ -73,10 +101,27 @@ public class AutenticacaoService implements CadastrarUsuarioUseCase, AutenticarU
 
 	private AutenticarUsuarioUseCase.Result emitirTokens(Usuario usuario) {
 		String accessToken = tokenPort.gerarAccessToken(usuario.getId(), usuario.getEmail().valor(),
-				usuario.getSessaoVersao());
+				usuario.getSessaoVersao(), usuario.getPermissoes());
 		String refreshToken = tokenPort.gerarRefreshToken(usuario.getId());
 		refreshTokenRepository.salvar(refreshToken, usuario.getId(), tokenPort.expiracaoRefreshToken());
 		return new AutenticarUsuarioUseCase.Result(usuario.getId(), accessToken, refreshToken,
 				tokenPort.expiracaoAccessToken());
+	}
+
+	@Override
+	@Transactional
+	public void desbloquear(Long usuarioSolicitanteId, Long usuarioId) {
+		exigirPermissao(usuarioSolicitanteId, PermissaoUsuario.USUARIO_DESBLOQUEAR);
+		Usuario usuario = usuarioRepository.buscarPorIdParaAtualizacao(usuarioId)
+				.orElseThrow(RecursoNaoEncontradoException::new);
+		usuarioRepository.salvar(usuario.desbloquear());
+		refreshTokenRepository.invalidarTodosDoUsuario(usuarioId);
+	}
+
+	private void exigirPermissao(Long usuarioId, PermissaoUsuario permissao) {
+		Usuario usuario = usuarioRepository.buscarPorId(usuarioId).orElseThrow(AcessoNegadoException::new);
+		if (!usuario.isAtivo() || usuario.isBloqueado() || !usuario.possuiPermissao(permissao)) {
+			throw new AcessoNegadoException();
+		}
 	}
 }

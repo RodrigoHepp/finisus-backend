@@ -11,11 +11,19 @@ class JwtUsuarioAutenticadoAuthenticationConverterTest {
 	@Test
 	void converteSubjectNumericoParaPrincipalTipado() {
 		Jwt jwt = Jwt.withTokenValue("token-de-teste").header("alg", "RS256").subject("42")
-				.claim("scope", "financeiro:ler").build();
+				.claim("permissoes", java.util.List.of("USUARIO_CADASTRAR", "USUARIO_DESBLOQUEAR")).build();
 
 		var authentication = converter.convert(jwt);
 
 		assertThat(authentication.getPrincipal()).isEqualTo(new UsuarioAutenticado(42L));
-		assertThat(authentication.getAuthorities()).extracting("authority").containsExactly("SCOPE_financeiro:ler");
+		assertThat(authentication.getAuthorities()).extracting("authority")
+				.containsExactly("USUARIO_CADASTRAR", "USUARIO_DESBLOQUEAR");
+	}
+
+	@Test
+	void tokenSemPermissoesNaoRecebeAuthorities() {
+		Jwt jwt = Jwt.withTokenValue("token-de-teste").header("alg", "RS256").subject("42").build();
+
+		assertThat(converter.convert(jwt).getAuthorities()).isEmpty();
 	}
 }

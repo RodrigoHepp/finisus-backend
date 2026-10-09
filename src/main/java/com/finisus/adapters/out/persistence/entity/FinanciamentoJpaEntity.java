@@ -58,6 +58,12 @@ public class FinanciamentoJpaEntity {
 	@Column(name = "cancelada_em")
 	private LocalDateTime canceladaEm;
 
+	@Column(name = "cronograma_versao", nullable = false)
+	private Integer cronogramaVersao;
+
+	@Column(name = "financiamento_origem_id")
+	private Long financiamentoOrigemId;
+
 	@OneToMany(mappedBy = "financiamento", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ParcelaFinanciamentoJpaEntity> parcelas = new ArrayList<>();
 }

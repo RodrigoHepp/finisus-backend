@@ -38,4 +38,15 @@ public class TransacaoHistoricoJpaEntity {
 
 	@Column(name = "alterado_em")
 	private LocalDateTime alteradoEm;
+
+	private String motivo;
+
+	@Column(name = "correlacao_id", length = 36)
+	private String correlacaoId;
+
+	@Column(name = "snapshot_anterior", columnDefinition = "TEXT")
+	private String snapshotAnterior;
+
+	@Column(name = "snapshot_novo", columnDefinition = "TEXT")
+	private String snapshotNovo;
 }

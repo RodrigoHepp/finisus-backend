@@ -6,6 +6,7 @@ import com.finisus.domain.model.Fatura;
 import com.finisus.domain.vo.AnoMes;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 public interface FaturaRepositoryPort {
 	Fatura salvar(Fatura fatura);
@@ -19,4 +20,8 @@ public interface FaturaRepositoryPort {
 	List<Fatura> listarPorCartao(Long cartaoId);
 
 	Pagina<Fatura> listarPorCartao(Long cartaoId, Paginacao paginacao);
+
+	List<Fatura> listarEmAbertoPorUsuario(Long usuarioId);
+
+	List<Fatura> listarAbertasParaFechamento(Long usuarioId, LocalDate dataReferencia);
 }

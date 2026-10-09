@@ -21,6 +21,9 @@ import com.finisus.application.pagination.Paginacao;
 import com.finisus.application.ports.in.RecorrenciaUseCase;
 import com.finisus.domain.model.Recorrencia;
 import com.finisus.domain.model.TipoTransacao;
+import com.finisus.domain.model.OcorrenciaRecorrencia;
+import com.finisus.domain.model.StatusOcorrenciaRecorrencia;
+import java.time.LocalDate;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -80,9 +83,20 @@ public class RecorrenciaController {
 	}
 
 	@PostMapping("/geracoes/{anoMes}")
-	List<TransacaoResponse> gerar(@UsuarioAtual Long usuarioId,
+	List<OcorrenciaResponse> gerar(@UsuarioAtual Long usuarioId,
 			@PathVariable @Pattern(regexp = "\\d{4}-\\d{2}") String anoMes) {
-		return useCase.gerarMes(usuarioId, anoMes).stream().map(TransacaoResponse::from).toList();
+		return useCase.gerarMes(usuarioId, anoMes).stream().map(OcorrenciaResponse::from).toList();
+	}
+
+	@GetMapping("/ocorrencias/{anoMes}")
+	List<OcorrenciaResponse> listarOcorrencias(@UsuarioAtual Long usuarioId,
+			@PathVariable @Pattern(regexp = "\\d{4}-\\d{2}") String anoMes) {
+		return useCase.listarOcorrencias(usuarioId, anoMes).stream().map(OcorrenciaResponse::from).toList();
+	}
+
+	@PostMapping("/ocorrencias/{ocorrenciaId}/realizar")
+	OcorrenciaResponse realizar(@UsuarioAtual Long usuarioId, @PathVariable @Positive Long ocorrenciaId) {
+		return OcorrenciaResponse.from(useCase.realizar(usuarioId, ocorrenciaId));
 	}
 
 	record Request(@NotBlank @Size(max = 150) String nome, @NotNull TipoTransacao tipo,
@@ -95,6 +109,16 @@ public class RecorrenciaController {
 		static Response from(Recorrencia r) {
 			return new Response(r.getId(), r.getNome(), r.getTipo(), r.getValorEsperado().valor(), r.getDiaDoMes(),
 					r.getCategoriaId(), r.getContaId(), r.getMeioPagamentoId(), r.isAtivo());
+		}
+	}
+
+	record OcorrenciaResponse(Long id, Long recorrenciaId, String anoMes, LocalDate vencimento, TipoTransacao tipo,
+			BigDecimal valor, String descricao, Long contaId, Long categoriaId, Long meioPagamentoId,
+			StatusOcorrenciaRecorrencia status, Long transacaoId) {
+		static OcorrenciaResponse from(OcorrenciaRecorrencia o) {
+			return new OcorrenciaResponse(o.id(), o.recorrenciaId(), o.anoMes(), o.vencimento(), o.tipo(),
+					o.valor().valor(), o.descricao(), o.contaId(), o.categoriaId(), o.meioPagamentoId(),
+					o.status(), o.transacaoId());
 		}
 	}
 }

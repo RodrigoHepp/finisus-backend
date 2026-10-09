@@ -1,7 +1,9 @@
 package com.finisus.adapters.out.persistence;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -39,6 +41,13 @@ public class MovimentoInvestimentoPersistenceAdapter implements MovimentoInvesti
 	@Override
 	public List<MovimentoInvestimento> listarPorInvestimento(Long investimentoId) {
 		return repository.findByInvestimentoIdOrderByDataDesc(investimentoId).stream().map(this::toDomain).toList();
+	}
+
+	@Override
+	public Map<Long, List<MovimentoInvestimento>> listarPorInvestimentos(List<Long> investimentosIds) {
+		if (investimentosIds.isEmpty()) return Map.of();
+		return repository.findByInvestimentoIdInOrderByInvestimentoIdAscDataDescIdDesc(investimentosIds).stream()
+				.map(this::toDomain).collect(Collectors.groupingBy(MovimentoInvestimento::getInvestimentoId));
 	}
 
 	@Override

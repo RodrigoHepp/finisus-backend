@@ -15,4 +15,8 @@ public interface InvestimentoJpaRepository extends JpaRepository<InvestimentoJpa
 	List<InvestimentoJpaEntity> findByUsuarioId(Long usuarioId);
 
 	Page<InvestimentoJpaEntity> findByUsuarioId(Long usuarioId, Pageable pageable);
+
+	boolean existsByContaCustodiaId(Long contaCustodiaId);
+
+	boolean existsByContaCustodiaIdAndIdNot(Long contaCustodiaId, Long id);
 }

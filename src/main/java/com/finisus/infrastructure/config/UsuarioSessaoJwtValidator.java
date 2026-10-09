@@ -1,6 +1,10 @@
 package com.finisus.infrastructure.config;
 
 import com.finisus.application.ports.out.UsuarioRepositoryPort;
+import com.finisus.domain.model.PermissaoUsuario;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
@@ -25,18 +29,28 @@ public class UsuarioSessaoJwtValidator implements OAuth2TokenValidator<Jwt> {
 			return OAuth2TokenValidatorResult.failure(INVALID_TOKEN);
 		}
 		Long usuarioId;
-		Long sessaoVersao = jwt.getClaim("sessao_versao");
+		Object sessaoVersaoClaim = jwt.getClaim("sessao_versao");
 		try {
 			usuarioId = Long.valueOf(jwt.getSubject());
 		} catch (NumberFormatException exception) {
 			return OAuth2TokenValidatorResult.failure(INVALID_TOKEN);
 		}
-		if (sessaoVersao == null) {
+		if (!(sessaoVersaoClaim instanceof Number sessaoVersao)) {
+			return OAuth2TokenValidatorResult.failure(INVALID_TOKEN);
+		}
+		Set<PermissaoUsuario> permissoesToken;
+		try {
+			var nomes = jwt.getClaimAsStringList("permissoes");
+			permissoesToken = nomes == null ? Collections.emptySet()
+					: nomes.stream().map(PermissaoUsuario::valueOf).collect(Collectors.toUnmodifiableSet());
+		} catch (IllegalArgumentException exception) {
 			return OAuth2TokenValidatorResult.failure(INVALID_TOKEN);
 		}
 		return usuarios.buscarPorId(usuarioId)
-				.filter(usuario -> usuario.isAtivo() && usuario.getSessaoVersao() == sessaoVersao)
-				.map(usuario -> OAuth2TokenValidatorResult.success())
+				.filter(usuario -> usuario.isAtivo() && !usuario.isBloqueado()
+						&& usuario.getSessaoVersao() == sessaoVersao.longValue()
+						&& usuario.getPermissoes().equals(permissoesToken))
+				.map(_ -> OAuth2TokenValidatorResult.success())
 				.orElseGet(() -> OAuth2TokenValidatorResult.failure(INVALID_TOKEN));
 	}
 }

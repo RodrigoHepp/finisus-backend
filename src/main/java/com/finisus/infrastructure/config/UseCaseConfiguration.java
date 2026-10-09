@@ -17,24 +17,6 @@ public class UseCaseConfiguration {
 	}
 
 	@Bean
-	@Primary
-	CadastrarUsuarioUseCase cadastrarUsuarioUseCase(AutenticacaoService s) {
-		return command -> s.executar(command);
-	}
-
-	@Bean
-	@Primary
-	AutenticarUsuarioUseCase autenticarUsuarioUseCase(AutenticacaoService s) {
-		return command -> s.executar(command);
-	}
-
-	@Bean
-	@Primary
-	RenovarTokenUseCase renovarTokenUseCase(AutenticacaoService s) {
-		return command -> s.executar(command);
-	}
-
-	@Bean
 	CartaoCreditoService cartaoCreditoService(CartaoCreditoRepositoryPort r) {
 		return new CartaoCreditoService(r);
 	}
@@ -47,8 +29,10 @@ public class UseCaseConfiguration {
 
 	@Bean
 	FaturaService faturaService(FaturaRepositoryPort f, CartaoCreditoUseCase c, ContaRepositoryPort co,
-			CategoriaRepositoryPort ca, ItemRepositoryPort i, TransacaoRepositoryPort t, ObterDataAtualPort d) {
-		return new FaturaService(f, c, co, ca, i, t, d);
+			CategoriaRepositoryPort ca, ItemRepositoryPort i, TransacaoRepositoryPort t, ObterDataAtualPort d,
+			EstornarTransacaoVinculadaUseCase e, PagamentoFaturaRepositoryPort p,
+			AplicacaoCreditoFaturaRepositoryPort ac) {
+		return new FaturaService(f, c, co, ca, i, t, d, e, p, ac);
 	}
 
 	@Bean
@@ -67,6 +51,10 @@ public class UseCaseConfiguration {
 				return s.buscarDetalhe(u, id);
 			}
 
+			public java.util.Map<Long, java.math.BigDecimal> buscarValoresEmAberto(Long u, java.util.List<Long> ids) {
+				return s.buscarValoresEmAberto(u, ids);
+			}
+
 			public java.util.List<com.finisus.domain.model.Fatura> listar(Long u, Long id) {
 				return s.listar(u, id);
 			}
@@ -80,12 +68,24 @@ public class UseCaseConfiguration {
 				return m.medir("gasto_cartao", () -> s.lancarGasto(u, c));
 			}
 
+			public com.finisus.domain.model.Transacao lancarCredito(Long u, LancarGastoCommand c) {
+				return m.medir("credito_fatura", () -> s.lancarCredito(u, c));
+			}
+
 			public com.finisus.domain.model.Fatura fechar(Long u, Long id) {
 				return s.fechar(u, id);
 			}
 
-			public com.finisus.domain.model.Fatura pagar(Long u, Long id, java.time.LocalDate d) {
-				return m.medir("pagamento_fatura", () -> s.pagar(u, id, d));
+			public ResultadoProcessamentoCiclo processarCiclos(Long u, java.time.LocalDate d) {
+				return m.medir("processamento_ciclo_fatura", () -> s.processarCiclos(u, d));
+			}
+
+			public com.finisus.domain.model.Fatura pagar(Long u, Long id, String k, PagamentoCommand c) {
+				return m.medir("pagamento_fatura", () -> s.pagar(u, id, k, c));
+			}
+
+			public com.finisus.domain.model.Fatura estornarPagamento(Long u, Long id) {
+				return m.medir("estorno_pagamento_fatura", () -> s.estornarPagamento(u, id));
 			}
 
 			public com.finisus.domain.model.Fatura atualizar(Long u, Long id, AtualizarCommand c) {
@@ -94,6 +94,161 @@ public class UseCaseConfiguration {
 
 			public com.finisus.domain.model.Fatura cancelar(Long u, Long id) {
 				return s.cancelar(u, id);
+			}
+		};
+	}
+
+	@Bean
+	ImportacaoFinanceiraService importacaoFinanceiraService(BancoUseCase b, ImportacaoFinanceiraRepositoryPort i,
+			LeitorDocumentoFinanceiroPort l, TransacaoRepositoryPort t, RegistrarTransacaoUseCase r, FaturaUseCase f,
+			ObrigacaoFinanceiraUseCase o, ObrigacaoFinanceiraRepositoryPort or, ContaRepositoryPort co,
+			CategoriaRepositoryPort ca, ItemRepositoryPort it, UsuarioRepositoryPort u, OperacaoFinanceiraMetrics m) {
+		return new ImportacaoFinanceiraService(b, i, l, t, r, f, o, or, co, ca, it, u, m);
+	}
+
+	@Bean
+	@Primary
+	ImportacaoFinanceiraUseCase importacaoFinanceiraUseCase(ImportacaoFinanceiraService s,
+			OperacaoFinanceiraMetrics m) {
+		return new ImportacaoFinanceiraUseCase() {
+			public Revisao iniciar(Long u, IniciarCommand c) {
+				return m.medir("importacao_inicio", () -> s.iniciar(u, c));
+			}
+
+			public Revisao buscar(Long u, Long id) {
+				return m.medir("importacao_consulta", () -> s.buscar(u, id));
+			}
+
+			public Revisao revisar(Long u, Long id, RevisarCommand c) {
+				return m.medir("importacao_revisao", () -> s.revisar(u, id, c));
+			}
+
+			public com.finisus.domain.model.ImportacaoFinanceira confirmar(Long u, Long id) {
+				return m.medir("importacao_confirmacao", () -> s.confirmar(u, id));
+			}
+		};
+	}
+
+	@Bean
+	ObrigacaoFinanceiraService obrigacaoFinanceiraService(ObrigacaoFinanceiraRepositoryPort o, ContaRepositoryPort c,
+			CategoriaRepositoryPort ca, RegistrarTransacaoUseCase t, ObterDataAtualPort d,
+			EstornarTransacaoVinculadaUseCase e, PagamentoObrigacaoRepositoryPort p) {
+		return new ObrigacaoFinanceiraService(o, c, ca, t, d, e, p);
+	}
+
+	@Bean
+	@Primary
+	ObrigacaoFinanceiraUseCase obrigacaoFinanceiraUseCase(ObrigacaoFinanceiraService s,
+			OperacaoFinanceiraMetrics m) {
+		return new ObrigacaoFinanceiraUseCase() {
+			public com.finisus.domain.model.ObrigacaoFinanceira criar(Long u, CriarCommand c) {
+				return m.medir("criacao_obrigacao", () -> s.criar(u, c));
+			}
+
+			public com.finisus.domain.model.ObrigacaoFinanceira buscar(Long u, Long id) {
+				return s.buscar(u, id);
+			}
+
+			public com.finisus.application.pagination.Pagina<com.finisus.domain.model.ObrigacaoFinanceira> listar(Long u,
+					FiltroListagem f, com.finisus.application.pagination.Paginacao p) {
+				return s.listar(u, f, p);
+			}
+
+			public com.finisus.domain.model.ObrigacaoFinanceira pagar(Long u, Long id, PagamentoCommand c) {
+				return m.medir("pagamento_obrigacao", () -> s.pagar(u, id, c));
+			}
+
+			public java.util.List<com.finisus.domain.model.PagamentoObrigacao> listarPagamentos(Long u, Long id) {
+				return s.listarPagamentos(u, id);
+			}
+
+			public com.finisus.domain.model.ObrigacaoFinanceira estornarPagamento(Long u, Long id, Long p) {
+				return m.medir("estorno_pagamento_obrigacao", () -> s.estornarPagamento(u, id, p));
+			}
+
+			public com.finisus.domain.model.ObrigacaoFinanceira estornarPagamento(Long u, Long id) {
+				return m.medir("estorno_pagamento_obrigacao", () -> s.estornarPagamento(u, id));
+			}
+
+			public com.finisus.domain.model.ObrigacaoFinanceira cancelar(Long u, Long id) {
+				return s.cancelar(u, id);
+			}
+
+			public int processarVencimentos(java.time.LocalDate d) {
+				return s.processarVencimentos(d);
+			}
+		};
+	}
+
+	@Bean
+	DashboardFinanceiroService dashboardFinanceiroService(DashboardFinanceiroRepositoryPort d) {
+		return new DashboardFinanceiroService(d);
+	}
+
+	@Bean
+	@Primary
+	DashboardFinanceiroUseCase dashboardFinanceiroUseCase(DashboardFinanceiroService s, OperacaoFinanceiraMetrics m) {
+		return new DashboardFinanceiroUseCase() {
+			public DashboardMensal consultarMensal(Long u, String a) {
+				return m.medir("consulta_dashboard_mensal", () -> s.consultarMensal(u, a));
+			}
+
+			public ResumoPeriodo consultarResumoPeriodo(Long u, String mesFinal, int periodoMeses) {
+				return m.medir("consulta_dashboard_periodo", () -> s.consultarResumoPeriodo(u, mesFinal, periodoMeses));
+			}
+
+			public ResumoAnual consultarAnual(Long u, String ano) {
+				return m.medir("consulta_dashboard_anual", () -> s.consultarAnual(u, ano));
+			}
+
+			public ComposicaoAnual consultarComposicaoAnual(Long u, String ano) {
+				return m.medir("consulta_dashboard_anual_composicao", () -> s.consultarComposicaoAnual(u, ano));
+			}
+
+			public Balancete consultarBalancete(Long u, ConsultaBalancete c,
+					com.finisus.application.pagination.Paginacao p) {
+				return m.medir("consulta_dashboard_balancete", () -> s.consultarBalancete(u, c, p));
+			}
+
+			public Balancete consultarBalanceteAnual(Long u, ConsultaBalanceteAnual c,
+					com.finisus.application.pagination.Paginacao p) {
+				return m.medir("consulta_dashboard_balancete_anual", () -> s.consultarBalanceteAnual(u, c, p));
+			}
+		};
+	}
+
+	@Bean
+	PainelFinanceiroService painelFinanceiroService(ContaRepositoryPort c, InvestimentoRepositoryPort i,
+			MovimentoInvestimentoRepositoryPort m, PosicaoInvestimentoRepositoryPort p, FaturaRepositoryPort f,
+			FaturaUseCase fu, ObrigacaoFinanceiraRepositoryPort o, ParcelaFinanciamentoRepositoryPort pa,
+			RecorrenciaRepositoryPort r, TransacaoRepositoryPort t, DashboardFinanceiroUseCase d,
+			DashboardFinanceiroRepositoryPort dd, DivisaoCompartilhadaRepositoryPort dc,
+			ConsultarResumoDivisaoUseCase rd, UsuarioRepositoryPort u, java.time.Clock clock) {
+		return new PainelFinanceiroService(c, i, m, p, f, fu, o, pa, r, t, d, dd, dc, rd, u, clock);
+	}
+
+	@Bean
+	@Primary
+	PainelFinanceiroUseCase painelFinanceiroUseCase(PainelFinanceiroService s, OperacaoFinanceiraMetrics m) {
+		return new PainelFinanceiroUseCase() {
+			public VisaoGeral consultarVisaoGeral(Long u, java.time.LocalDate r, int j) {
+				return m.medir("consulta_painel_visao_geral", () -> s.consultarVisaoGeral(u, r, j));
+			}
+
+			public AgendaFinanceira consultarAgenda(Long u, java.time.LocalDate i, java.time.LocalDate f) {
+				return m.medir("consulta_painel_agenda", () -> s.consultarAgenda(u, i, f));
+			}
+
+			public Patrimonio consultarPatrimonio(Long u, java.time.LocalDate r) {
+				return m.medir("consulta_painel_patrimonio", () -> s.consultarPatrimonio(u, r));
+			}
+
+			public Compartilhados consultarCompartilhados(Long u, java.time.LocalDate i, java.time.LocalDate f) {
+				return m.medir("consulta_painel_compartilhados", () -> s.consultarCompartilhados(u, i, f));
+			}
+
+			public AnaliseReceitasGastos consultarReceitasEGastos(Long u, String f, int p) {
+				return m.medir("consulta_painel_receitas_gastos", () -> s.consultarReceitasEGastos(u, f, p));
 			}
 		};
 	}
@@ -111,33 +266,117 @@ public class UseCaseConfiguration {
 	}
 
 	@Bean
-	DespesaCompartilhadaService despesaCompartilhadaService(DespesaCompartilhadaRepositoryPort d,
-			RateioDespesaRepositoryPort r, ConfiguracaoCompartilhamentoRepositoryPort c, TransacaoRepositoryPort t,
-			UsuarioRepositoryPort u, ObterDataAtualPort dataAtual) {
-		return new DespesaCompartilhadaService(d, r, c, t, u, dataAtual);
+	DivisaoCompartilhadaService divisaoCompartilhadaService(DivisaoCompartilhadaRepositoryPort d,
+			VinculoTransacaoDivisaoRepositoryPort v, TransacaoRepositoryPort t, UsuarioRepositoryPort u,
+			com.finisus.application.ports.out.AlocacaoPagamentoDivisaoRepositoryPort alocacoes,
+			com.finisus.application.ports.out.ReembolsoDivisaoRepositoryPort reembolsos) {
+		return new DivisaoCompartilhadaService(d, v, t, u, alocacoes, reembolsos);
 	}
 
 	@Bean
 	@Primary
-	DespesaCompartilhadaUseCase despesaCompartilhadaUseCase(DespesaCompartilhadaService s) {
-		return s;
-	}
+	DivisaoCompartilhadaUseCase divisaoCompartilhadaUseCase(DivisaoCompartilhadaService s) {
+		return new DivisaoCompartilhadaUseCase() {
+			public com.finisus.domain.model.DivisaoCompartilhada criar(Long u, CriarCommand c) {
+				return s.criar(u, c);
+			}
 
-	@Bean
-	RateioDespesaService rateioDespesaService(RateioDespesaRepositoryPort r, DespesaCompartilhadaRepositoryPort d) {
-		return new RateioDespesaService(r, d);
+			public com.finisus.application.pagination.Pagina<com.finisus.domain.model.DivisaoCompartilhada> listar(Long u,
+					com.finisus.application.pagination.Paginacao p) {
+				return s.listar(u, p);
+			}
+
+			public com.finisus.domain.model.DivisaoCompartilhada buscar(Long u, Long id) {
+				return s.buscar(u, id);
+			}
+
+			public com.finisus.domain.model.DivisaoCompartilhada atualizarParticipantes(Long u, Long id,
+					java.util.List<ParticipanteCommand> p) {
+				return s.atualizarParticipantes(u, id, p);
+			}
+
+			public com.finisus.domain.model.DivisaoCompartilhada inativar(Long u, Long id) {
+				return s.inativar(u, id);
+			}
+
+			public java.util.List<com.finisus.domain.model.HistoricoParticipanteDivisao> listarHistoricoParticipantes(
+					Long u, Long id) {
+				return s.listarHistoricoParticipantes(u, id);
+			}
+		};
 	}
 
 	@Bean
 	@Primary
-	RateioDespesaUseCase rateioDespesaUseCase(RateioDespesaService s) {
-		return s;
+	AssociarTransacaoDivisaoUseCase associarTransacaoDivisaoUseCase(DivisaoCompartilhadaService s) {
+		return new AssociarTransacaoDivisaoUseCase() {
+			public void associar(Long u, Long divisaoId, Long transacaoId) {
+				s.associar(u, divisaoId, transacaoId);
+			}
+
+			public void associar(Long u, Long divisaoId, Long transacaoId, java.math.BigDecimal baseCompartilhada,
+					java.util.List<ResponsabilidadeCommand> responsabilidades) {
+				s.associar(u, divisaoId, transacaoId, baseCompartilhada, responsabilidades);
+			}
+
+			public void desassociar(Long u, Long divisaoId, Long transacaoId) {
+				s.desassociar(u, divisaoId, transacaoId);
+			}
+
+			public java.util.List<VinculoPendente> listarPendentes(Long u, Long divisaoId) {
+				return s.listarPendentes(u, divisaoId);
+			}
+
+			public void revisar(Long u, Long divisaoId, Long transacaoId,
+					java.util.List<ResponsabilidadeCommand> responsabilidades) {
+				s.revisar(u, divisaoId, transacaoId, responsabilidades);
+			}
+
+			public java.util.List<com.finisus.domain.model.AlocacaoPagamentoDivisao> listarAlocacoes(
+					Long u, Long divisaoId, Long transacaoId) {
+				return s.listarAlocacoes(u, divisaoId, transacaoId);
+			}
+
+			public java.util.List<com.finisus.domain.model.AlocacaoPagamentoDivisao> substituirAlocacoes(
+					Long u, Long divisaoId, Long transacaoId, java.util.List<AlocacaoCommand> alocacoes) {
+				return s.substituirAlocacoes(u, divisaoId, transacaoId, alocacoes);
+			}
+
+			public com.finisus.domain.model.ResumoPagamentoDivisao consultarPagamento(
+					Long u, Long divisaoId, Long transacaoId) {
+				return s.consultarPagamento(u, divisaoId, transacaoId);
+			}
+
+			public void cancelarAlocacao(Long u, Long divisaoId, Long transacaoId, Long alocacaoId) {
+				s.cancelarAlocacao(u, divisaoId, transacaoId, alocacaoId);
+			}
+
+			public com.finisus.domain.model.ReembolsoDivisao registrarReembolso(Long u, Long divisaoId,
+					Long transacaoId, Long recebedorId, java.math.BigDecimal valor) {
+				return s.registrarReembolso(u, divisaoId, transacaoId, recebedorId, valor);
+			}
+
+			public void cancelarReembolso(Long u, Long divisaoId, Long reembolsoId) {
+				s.cancelarReembolso(u, divisaoId, reembolsoId);
+			}
+
+			public java.util.List<com.finisus.domain.model.ReembolsoDivisao> listarReembolsos(Long u, Long divisaoId) {
+				return s.listarReembolsos(u, divisaoId);
+			}
+		};
+	}
+
+	@Bean
+	@Primary
+	ConsultarResumoDivisaoUseCase consultarResumoDivisaoUseCase(DivisaoCompartilhadaService s) {
+		return s::consultarResumo;
 	}
 
 	@Bean
 	CompraParceladaService compraParceladaService(CompraParceladaRepositoryPort c, ContaRepositoryPort co,
-			CategoriaRepositoryPort ca, TransacaoRepositoryPort t, ObterDataAtualPort d) {
-		return new CompraParceladaService(c, co, ca, t, d);
+			CategoriaRepositoryPort ca, TransacaoRepositoryPort t, FaturaRepositoryPort f,
+			CartaoCreditoUseCase cc, ObterDataAtualPort d) {
+		return new CompraParceladaService(c, co, ca, t, f, cc, d);
 	}
 
 	@Bean
@@ -160,6 +399,40 @@ public class UseCaseConfiguration {
 	@Bean
 	ContaService contaService(ContaRepositoryPort c, BancoRepositoryPort b) {
 		return new ContaService(c, b);
+	}
+
+	@Bean
+	ReconciliacaoSaldoContaService reconciliacaoSaldoContaService(ContaRepositoryPort c) {
+		return new ReconciliacaoSaldoContaService(c);
+	}
+
+	@Bean
+	@Primary
+	ReconciliarSaldoContaUseCase reconciliarSaldoContaUseCase(ReconciliacaoSaldoContaService s,
+			OperacaoFinanceiraMetrics m) {
+		return (u, c) -> m.medir("reconciliacao_saldo", () -> {
+			var resultado = s.reconciliar(u, c);
+			if (!resultado.conciliado()) m.registrarDivergenciaSaldo();
+			return resultado;
+		});
+	}
+
+	@Bean
+	AjustarSaldoContaUseCase ajustarSaldoContaUseCase(AjusteSaldoContaRepositoryPort a, ContaRepositoryPort c,
+			ObterDataAtualPort d) {
+		return new AjusteSaldoContaService(a, c, d);
+	}
+
+	@Bean
+	TransferenciaContaService transferenciaContaService(TransferenciaContaRepositoryPort tr, ContaRepositoryPort c,
+			TransacaoRepositoryPort t, ObterDataAtualPort d) {
+		return new TransferenciaContaService(tr, c, t, d);
+	}
+
+	@Bean
+	@Primary
+	TransferenciaContaUseCase transferenciaContaUseCase(TransferenciaContaService s) {
+		return s;
 	}
 
 	@Bean
@@ -204,8 +477,9 @@ public class UseCaseConfiguration {
 	@Bean
 	TransacaoService transacaoService(ContaRepositoryPort c, CategoriaRepositoryPort ca, MeioPagamentoRepositoryPort m,
 			ItemRepositoryPort i, TransacaoRepositoryPort t, ObterDataAtualPort d,
-			DespesaCompartilhadaRepositoryPort dc) {
-		return new TransacaoService(c, ca, m, i, t, d, dc);
+			VinculoTransacaoDivisaoRepositoryPort v, ObrigacaoFinanceiraRepositoryPort o,
+			ParcelaFinanciamentoRepositoryPort p) {
+		return new TransacaoService(c, ca, m, i, t, d, v, o, p);
 	}
 
 	@Bean
@@ -229,8 +503,17 @@ public class UseCaseConfiguration {
 				return s.listar(u, p);
 			}
 
-			public com.finisus.domain.model.Transacao corrigir(Long u, Long id, RegistrarCommand c) {
+			public com.finisus.application.pagination.Pagina<com.finisus.domain.model.Transacao> listar(Long u,
+					com.finisus.application.pagination.Paginacao p, FiltroListagem f) {
+				return m.medir("consulta_transacoes", () -> s.listar(u, p, f));
+			}
+
+			public com.finisus.domain.model.Transacao corrigir(Long u, Long id, CorrigirCommand c) {
 				return s.corrigir(u, id, c);
+			}
+
+			public com.finisus.domain.model.Transacao detalhar(Long u, Long id, DetalharCommand c) {
+				return s.detalhar(u, id, c);
 			}
 
 			public com.finisus.domain.model.Transacao estornar(Long u, Long id) {
@@ -268,6 +551,18 @@ public class UseCaseConfiguration {
 	}
 
 	@Bean
+	PosicaoInvestimentoService posicaoInvestimentoService(PosicaoInvestimentoRepositoryPort p,
+			InvestimentoUseCase i) {
+		return new PosicaoInvestimentoService(p, i);
+	}
+
+	@Bean
+	@Primary
+	PosicaoInvestimentoUseCase posicaoInvestimentoUseCase(PosicaoInvestimentoService s) {
+		return s;
+	}
+
+	@Bean
 	MovimentoInvestimentoService movimentoInvestimentoService(MovimentoInvestimentoRepositoryPort m,
 			InvestimentoUseCase i, RegistrarTransacaoUseCase t, TransacaoUseCase tc, ObterDataAtualPort d) {
 		return new MovimentoInvestimentoService(m, i, t, tc, d);
@@ -280,8 +575,9 @@ public class UseCaseConfiguration {
 	}
 
 	@Bean
-	PerfilUsuarioService perfilUsuarioService(UsuarioRepositoryPort u, RefreshTokenRepositoryPort r) {
-		return new PerfilUsuarioService(u, r);
+	PerfilUsuarioService perfilUsuarioService(UsuarioRepositoryPort u, RefreshTokenRepositoryPort r,
+			DadosPessoaisPort d, SolicitacaoPrivacidadeRepositoryPort s, java.time.Clock c) {
+		return new PerfilUsuarioService(u, r, d, s, c);
 	}
 
 	@Bean
@@ -305,8 +601,9 @@ public class UseCaseConfiguration {
 
 	@Bean
 	ParcelaFinanciamentoService parcelaFinanciamentoService(ParcelaFinanciamentoRepositoryPort p,
-			FinanciamentoRepositoryPort f, ContaRepositoryPort c, TransacaoRepositoryPort t, ObterDataAtualPort d) {
-		return new ParcelaFinanciamentoService(p, f, c, t, d);
+			FinanciamentoRepositoryPort f, ContaRepositoryPort c, TransacaoRepositoryPort t, ObterDataAtualPort d,
+			EstornarTransacaoVinculadaUseCase e) {
+		return new ParcelaFinanciamentoService(p, f, c, t, d, e);
 	}
 
 	@Bean
@@ -324,6 +621,12 @@ public class UseCaseConfiguration {
 			public java.util.List<com.finisus.domain.model.ParcelaFinanciamento> excluirERecalcular(
 					com.finisus.domain.model.Financiamento f, Long id) {
 				return s.excluirERecalcular(f, id);
+			}
+
+			public AmortizacaoCronograma amortizar(Long u, com.finisus.domain.model.Financiamento f,
+					java.math.BigDecimal v, java.time.LocalDate d, Integer n,
+					com.finisus.domain.model.ModalidadeAmortizacaoFinanciamento m) {
+				return s.amortizar(u, f, v, d, n, m);
 			}
 		};
 	}
@@ -357,6 +660,10 @@ public class UseCaseConfiguration {
 			public com.finisus.domain.model.ParcelaFinanciamento pagarParcela(Long u, Long f, Long id,
 					java.time.LocalDate data) {
 				return m.medir("pagamento_parcela", () -> s.pagarParcela(u, f, id, data));
+			}
+
+			public com.finisus.domain.model.ParcelaFinanciamento estornarPagamento(Long u, Long f, Long id) {
+				return m.medir("estorno_pagamento_parcela", () -> s.estornarPagamento(u, f, id));
 			}
 
 			public int processarAtrasos(ProcessarAtrasosCommand c) {
