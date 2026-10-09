@@ -44,7 +44,7 @@ O projeto não possui Maven Wrapper; use um Maven instalado. O pipeline `.github
 
 O artefato empacotado é `target/finisus-backend-0.1.0-SNAPSHOT.jar`. **⚠️ Não confirmado:** não há Dockerfile, manifesto de deploy ou publicação do artefato neste repositório.
 
-Os limites defensivos da importação PDF ficam em `app.importacao.pdf.max-pages`, `max-extracted-characters`, `max-processing-time` e `max-main-memory-bytes`. Os valores padrão são, respectivamente, 100 páginas, 2.000.000 de caracteres, 5 segundos e 8 MB de cache principal. Mantenha o limite multipart de 10 MB ou reduza todos esses valores conforme a capacidade do ambiente.
+Os limites defensivos da importação PDF ficam em `app.importacao.pdf.max-pages`, `max-extracted-characters`, `max-processing-time` e `max-main-memory-bytes`. Os valores padrão são, respectivamente, 100 páginas, 2.000.000 de caracteres, 5 segundos e 8 MB de cache principal. Mantenha o limite multipart de 8 MB ou reduza todos esses valores conforme a capacidade do ambiente.
 
 ## Verificação
 

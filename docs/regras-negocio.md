@@ -166,7 +166,7 @@ E-mails são normalizados com `Locale.ROOT` antes do uso nas regras de negócio.
 
 ## Importação financeira por PDF
 
-- A importação exige um banco selecionado e um PDF legível de até 10 MB. O nome do arquivo não define o tipo do documento. PDFs compostos apenas por imagem são recusados com erro específico porque OCR ainda não é suportado.
+- A importação exige um banco selecionado e um PDF legível de até 8 MB. O nome do arquivo não define o tipo do documento. PDFs compostos apenas por imagem são recusados com erro específico porque OCR ainda não é suportado.
 - O conteúdo é identificado por SHA-256 no contexto de usuário e banco. Reenviar o mesmo PDF reaproveita o lote existente; o mesmo conteúdo permanece permitido para outro usuário ou banco.
 - A criação é serializada por usuário e revalida o hash após adquirir a trava, impedindo que duas requisições simultâneas criem dois lotes para o mesmo documento.
 - O lote fica pendente de revisão: nenhuma transação ou gasto de fatura é criado durante a leitura.

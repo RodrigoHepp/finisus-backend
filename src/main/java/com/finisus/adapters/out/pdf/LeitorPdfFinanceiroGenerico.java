@@ -19,11 +19,12 @@ import org.springframework.stereotype.Component;
 @Order(100)
 class LeitorPdfFinanceiroGenerico implements LeitorPdfFinanceiro {
 	private static final Pattern DATA_COMPLETA = Pattern.compile("(\\d{2})/(\\d{2})/(\\d{4})");
-	private static final Pattern VENCIMENTO = Pattern.compile("(?i)Vencimento\\s*:?\\s*(\\d{2}/\\d{2}/\\d{4})");
-	private static final Pattern VALOR_TOTAL = Pattern.compile("(?i)(?:valor\\s+do\\s+documento|total\\s+(?:da\\s+)?fatura|valor\\s+total)\\s*:?\\s*R\\$\\s*([\\d.]+,[\\d]{2})");
-	private static final Pattern SALDO_INICIAL = Pattern.compile("(?i)saldo\\s+inicial\\s*:?\\s*R\\$\\s*([\\d.]+,[\\d]{2})");
-	private static final Pattern SALDO_FINAL = Pattern.compile("(?i)saldo\\s+(?:final|atual|dispon[ií]vel)\\s*:?\\s*R\\$\\s*([\\d.]+,[\\d]{2})");
-	private static final Pattern LANCAMENTO = Pattern.compile("(?m)^(\\d{2}/\\d{2}/\\d{4})\\s+(.+?)\\s+(-?R\\$\\s*[\\d.]+,[\\d]{2})\\s*$");
+	private static final Pattern VENCIMENTO = Pattern.compile("(?iu)Vencimento\\s*+:?\\s*+(\\d{2}/\\d{2}/\\d{4})");
+	private static final Pattern VALOR_TOTAL = Pattern.compile("(?iu)(?:valor\\s++do\\s++documento|total\\s++(?:da\\s++)?fatura|valor\\s++total)\\s*+:?\\s*+R\\$\\s*+([\\d.]++,[\\d]{2})");
+	private static final Pattern SALDO_INICIAL = Pattern.compile("(?iu)saldo\\s++inicial\\s*+:?\\s*+R\\$\\s*+([\\d.]++,[\\d]{2})");
+	private static final Pattern SALDO_FINAL = Pattern.compile("(?iu)saldo\\s++(?:final|atual|dispon[ií]vel)\\s*+:?\\s*+R\\$\\s*+([\\d.]++,[\\d]{2})");
+	private static final Pattern LANCAMENTO = Pattern.compile("(?m)^(\\d{2}/\\d{2}/\\d{4})\\s++(.{1,1000}?)\\s++(-?R\\$\\s*+[\\d.]++,[\\d]{2})[ \\t]*+$");
+	private static final Pattern IDENTIFICADOR_CONTA = Pattern.compile("(?iu)conta\\s*+(?:n[ºo.]*+)?\\s*+([\\d.-]{4,})");
 
 	@Override
 	public boolean suporta(LeitorDocumentoFinanceiroPort.ArquivoPdf arquivo, String texto) {
@@ -72,7 +73,7 @@ class LeitorPdfFinanceiroGenerico implements LeitorPdfFinanceiro {
 	private LocalDate data(Matcher matcher) { return matcher.find() ? data(matcher.group(1)) : null; }
 	private LocalDate data(String valor) { String[] partes = valor.split("/"); return LocalDate.of(Integer.parseInt(partes[2]), Integer.parseInt(partes[1]), Integer.parseInt(partes[0])); }
 	private BigDecimal valor(Matcher matcher) { return matcher.find() ? monetario(matcher.group(1)) : null; }
-	private String identificador(String texto) { Matcher matcher = Pattern.compile("(?i)conta\\s*(?:n[ºo.]*)?\\s*([\\d.-]{4,})").matcher(texto); return matcher.find() ? "conta-" + matcher.group(1) : null; }
+	private String identificador(String texto) { Matcher matcher = IDENTIFICADOR_CONTA.matcher(texto); return matcher.find() ? "conta-" + matcher.group(1) : null; }
 	private BigDecimal monetario(String valor) {
 		String normalizado = valor.replace('\u2212', '-').replaceAll("[^\\d,.-]", "").replace(".", "").replace(',', '.');
 		return new BigDecimal(normalizado);

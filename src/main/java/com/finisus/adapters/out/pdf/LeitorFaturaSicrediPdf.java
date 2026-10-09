@@ -21,11 +21,11 @@ class LeitorFaturaSicrediPdf implements LeitorPdfFinanceiro {
 	private static final Map<String, Integer> MESES = Map.ofEntries(Map.entry("jan", 1), Map.entry("fev", 2),
 			Map.entry("mar", 3), Map.entry("abr", 4), Map.entry("mai", 5), Map.entry("jun", 6), Map.entry("jul", 7),
 			Map.entry("ago", 8), Map.entry("set", 9), Map.entry("out", 10), Map.entry("nov", 11), Map.entry("dez", 12));
-	private static final Pattern VENCIMENTO = Pattern.compile("(?i)Vencimento\\s+(\\d{1,2})/(\\d{2})/(\\d{4})");
-	private static final Pattern TOTAL = Pattern.compile("(?i)Total\\s+fatura(?:\\s+de\\s+\\p{L}+)?\\s+R\\$\\s*([\\d.]+,[\\d]{2})");
-	private static final Pattern CARTAO_FINAL = Pattern.compile("(?i)(?:cart[aã]o|visa|mastercard).*?final\\s+(\\d{4})");
+	private static final Pattern VENCIMENTO = Pattern.compile("(?iu)Vencimento\\s+(\\d{1,2})/(\\d{2})/(\\d{4})");
+	private static final Pattern TOTAL = Pattern.compile("(?iu)Total\\s+fatura(?:\\s+de\\s+\\p{L}+)?\\s+R\\$\\s*([\\d.]+,[\\d]{2})");
+	private static final Pattern CARTAO_FINAL = Pattern.compile("(?iu)(?:cart[aã]o|visa|mastercard).*?final\\s+(\\d{4})");
 	private static final Pattern LANCAMENTO = Pattern.compile(
-			"(?ms)^(\\d{1,2})/(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)(?:\\s+\\d{2}:\\d{2})?\\s*(.*?)\\s*(-?R\\$\\s*[\\d.]+,[\\d]{2})(?=\\s*(?:\\d{1,2}/(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)|Total\\s+cart|Legenda:|$))");
+			"(?ms)^(\\d{1,2})/(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)(?:\\s++\\d{2}:\\d{2})?\\s*+(.{0,1000}?)\\s++(-?R\\$\\s*+[\\d.]++,[\\d]{2})(?=\\s*+(?:\\d{1,2}/(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)|Total\\s++cart|Legenda:|$))");
 
 	@Override
 	public boolean suporta(LeitorDocumentoFinanceiroPort.ArquivoPdf arquivo, String texto) {

@@ -24,12 +24,12 @@ class LeitorExtratoC6Pdf implements LeitorPdfFinanceiro {
 			Map.entry("junho", 6), Map.entry("julho", 7), Map.entry("agosto", 8), Map.entry("setembro", 9),
 			Map.entry("outubro", 10), Map.entry("novembro", 11), Map.entry("dezembro", 12));
 	private static final String MES = "janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro";
-	private static final Pattern PERIODO = Pattern.compile("(?i)per[ií]odo[^\\d]{0,5}(\\d{1,2})\\s+de\\s+(" + MES
+	private static final Pattern PERIODO = Pattern.compile("(?iu)per[ií]odo[^\\d]{0,5}(\\d{1,2})\\s+de\\s+(" + MES
 			+ ")\\s+de\\s+(\\d{4})\\s+at[eé]\\s+(\\d{1,2})\\s+de\\s+(" + MES + ")\\s+de\\s+(\\d{4})");
-	private static final Pattern SALDO_FINAL = Pattern.compile("(?i)saldo\\s+do\\s+dia[^\\d]{0,5}\\d{1,2}\\s+de\\s+(?:" + MES
+	private static final Pattern SALDO_FINAL = Pattern.compile("(?iu)saldo\\s+do\\s+dia[^\\d]{0,5}\\d{1,2}\\s+de\\s+(?:" + MES
 			+ ")\\s+de\\s+\\d{4}[^-R\\d]{0,5}(-?R\\$[^\\d]{0,5}[\\d.]+,[\\d]{2})");
 	private static final Pattern LANCAMENTO = Pattern.compile(
-			"(?m)^(\\d{2})/(\\d{2})\\s+\\d{2}/\\d{2}\\s+(.+?)\\s+(-?R\\$[^\\d]{0,5}[\\d.]+,[\\d]{2})\\s*$");
+			"(?m)^(\\d{2})/(\\d{2})\\s++\\d{2}/\\d{2}\\s++(.{1,1000}?)\\s++(-?R\\$[^\\d]{0,5}[\\d.]++,[\\d]{2})[ \\t]*+$");
 
 	@Override
 	public boolean suporta(LeitorDocumentoFinanceiroPort.ArquivoPdf arquivo, String texto) {

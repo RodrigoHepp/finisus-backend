@@ -43,7 +43,7 @@
 | VAL-035 | Base/alocação | Base excede saída; pagamentos excedem base ou transação disponível | Não usar valor além do real | Recusar | Erro de base/alocação | FUNC-020 | RN-030 |
 | VAL-036 | Reembolso | Sem dívida/crédito suficiente ou saída própria elegível | Comprovar compensação | Recusar | Erro de reembolso/transação/saldo | FUNC-021 | RN-031 |
 | VAL-037 | Migração | Rateio pago/recusado/cancelado ou mapeamento incompleto | Preservar origem e identidade | Recusar | Erro de migração/mapeamento | FUNC-021 | RN-029 |
-| VAL-038 | PDF | Inválido, vazio ou acima de 10 MB | Limitar e reconhecer entrada | Recusar antes de criar efeitos | Envie um arquivo PDF válido, não vazio e de até 10 MB. | FUNC-022 | RN-032 |
+| VAL-038 | PDF | Inválido, vazio ou acima de 8 MB | Limitar e reconhecer entrada | Recusar antes de criar efeitos | Envie um arquivo PDF válido, não vazio e de até 8 MB. | FUNC-022 | RN-032 |
 | VAL-039 | PDF sem texto | Exige OCR | Evitar prévia sem interpretação sustentada | Recusar leitura | Este PDF não possui uma camada de texto legível. OCR ainda não é suportado; envie o PDF original com texto selecionável. | FUNC-022 | RN-032 |
 | VAL-040 | Destino da importação | Extrato com conta de outro banco ou conta/fatura incompatível | Aplicar documento no contexto correto | Recusar | A conta de destino deve pertencer ao banco informado para o extrato. | FUNC-022 | RN-032 |
 | VAL-041 | Revisão | Justificativa ausente; selecionados incompletos; nenhuma linha selecionada | Exigir decisão verificável | Recusar revisão/confirmação | Informe a justificativa da decisão humana para cada linha revisada. / Selecione ao menos um lançamento para importar. | FUNC-022 | RN-015 |

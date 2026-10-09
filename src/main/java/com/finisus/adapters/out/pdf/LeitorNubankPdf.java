@@ -23,20 +23,20 @@ class LeitorNubankPdf implements LeitorPdfFinanceiro {
 			Map.entry("ago", 8), Map.entry("set", 9), Map.entry("out", 10), Map.entry("nov", 11), Map.entry("dez", 12));
 	private static final String MES = "jan(?:eiro)?|fev(?:ereiro)?|mar(?:ço)?|abr(?:il)?|mai(?:o)?|jun(?:ho)?|jul(?:ho)?|ago(?:sto)?|set(?:embro)?|out(?:ubro)?|nov(?:embro)?|dez(?:embro)?";
 	private static final Pattern FATURA_VENCIMENTO = Pattern.compile(
-			"(?i)Data de vencimento:\\s*(\\d{1,2})\\s+(" + MES + ")\\s+(\\d{4})");
+			"(?iu)Data de vencimento:\\s*(\\d{1,2})\\s+(" + MES + ")\\s+(\\d{4})");
 	private static final Pattern FATURA_TOTAL_COMPRAS = Pattern.compile(
-			"(?i)Total de compras de todos os cart[õo]es[^\\r\\n]*?R\\$\\s*([\\d.]+,[\\d]{2})");
-	private static final Pattern FATURA_TOTAL_A_PAGAR = Pattern.compile("(?i)Total a pagar\\s+R\\$\\s*([\\d.]+,[\\d]{2})");
+			"(?iu)Total de compras de todos os cart[õo]es[^\\r\\n]{0,1000}?R\\$\\s*+([\\d.]++,[\\d]{2})");
+	private static final Pattern FATURA_TOTAL_A_PAGAR = Pattern.compile("(?iu)Total a pagar\\s+R\\$\\s*([\\d.]+,[\\d]{2})");
 	private static final Pattern FATURA_LANCAMENTO = Pattern.compile(
-			"(?im)^(\\d{1,2})\\s+(" + MES + ")\\s+(.+?)\\s+([−-]?R\\$\\s*[\\d.]+,[\\d]{2})\\s*$");
-	private static final Pattern EXTRATO_PERIODO = Pattern.compile("(?i)(\\d{1,2}) DE (" + MES + ") DE (\\d{4})\\s+A\\s+"
+			"(?imu)^(\\d{1,2})\\s++(" + MES + ")\\s++(.{1,1000}?)\\s++([−-]?R\\$\\s*+[\\d.]++,[\\d]{2})[ \\t]*+$");
+	private static final Pattern EXTRATO_PERIODO = Pattern.compile("(?iu)(\\d{1,2}) DE (" + MES + ") DE (\\d{4})\\s+A\\s+"
 			+ "(\\d{1,2}) DE (" + MES + ") DE (\\d{4})");
-	private static final Pattern EXTRATO_CONTA = Pattern.compile("(?i)Conta\\s+(\\d[\\d-]{4,})");
-	private static final Pattern EXTRATO_SALDO_INICIAL = Pattern.compile("(?i)Saldo inicial\\s+([\\d.]+,[\\d]{2})");
-	private static final Pattern EXTRATO_SALDO_FINAL = Pattern.compile("(?i)Saldo final do per[ií]odo\\s+(?:R\\$\\s*)?([\\d.]+,[\\d]{2})");
-	private static final Pattern EXTRATO_DIA = Pattern.compile("(?i)^(\\d{1,2})\\s+(" + MES + ")\\s+(\\d{4})\\s+Total de "
+	private static final Pattern EXTRATO_CONTA = Pattern.compile("(?iu)Conta\\s+(\\d[\\d-]{4,})");
+	private static final Pattern EXTRATO_SALDO_INICIAL = Pattern.compile("(?iu)Saldo inicial\\s+([\\d.]+,[\\d]{2})");
+	private static final Pattern EXTRATO_SALDO_FINAL = Pattern.compile("(?iu)Saldo final do per[ií]odo\\s+(?:R\\$\\s*)?([\\d.]+,[\\d]{2})");
+	private static final Pattern EXTRATO_DIA = Pattern.compile("(?iu)^(\\d{1,2})\\s+(" + MES + ")\\s+(\\d{4})\\s+Total de "
 			+ "(entradas|sa[ií]das)\\s+[+-]\\s*([\\d.]+,[\\d]{2})$");
-	private static final Pattern VALOR_NO_FIM = Pattern.compile("(.+?)\\s+([\\d.]+,[\\d]{2})$");
+	private static final Pattern VALOR_NO_FIM = Pattern.compile("(.{1,1000}?)\\s++([\\d.]++,[\\d]{2})$");
 
 	@Override
 	public boolean suporta(LeitorDocumentoFinanceiroPort.ArquivoPdf arquivo, String texto) {

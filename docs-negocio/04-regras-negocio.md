@@ -626,7 +626,7 @@ RN-001 a RN-018 mantêm os temas do catálogo técnico anterior, com qualificaç
 
 ## RN-032 — Limites e contexto da importação
 
-**Regra:** PDF não vazio de até 10 MB com texto legível; destino compatível; linhas revisadas com justificativa. Associação exige correspondência e acesso ao registro.
+**Regra:** PDF não vazio de até 8 MB com texto legível; destino compatível; linhas revisadas com justificativa. Associação exige correspondência e acesso ao registro.
 
 **Motivo da regra:** 💡 preservar a coerência do processo de limites e contexto da importação e permitir compreender seu resultado; justificativa original a validar com PO.
 
